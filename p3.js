@@ -70,6 +70,8 @@ function update(dt){
  const av=worldDir();const al=Math.hypot(av.x,av.z)||1;player.ang=Math.atan2(av.x,av.z);
  player.mesh.rotation.y=Math.atan2(-(av.x/al),-(av.z/al));
  player.walk+=dt*(ml>0.05?11:0);
+ if(ml>0.05 && Math.sin(player.walk)>0.96 && (player._stepT||0)<=0){sfxFootstep();player._stepT=0.18;}
+ player._stepT=Math.max(0,(player._stepT||0)-dt);
  player.mesh.position.set(player.x,ml>0.05?Math.abs(Math.sin(player.walk))*0.13:0,player.z);
 
  /* shooting */

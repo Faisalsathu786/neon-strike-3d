@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>NEON STRIKE 3D — Block Campaign</title>
+<title>NEON STRIKE 3D — Tactical Human Combat</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{width:100%;height:100%;overflow:hidden;background:#8fd0ff;font-family:'Segoe UI',system-ui,sans-serif;user-select:none;}
@@ -72,7 +72,7 @@
   #touch{position:fixed;inset:0;z-index:3;display:none;pointer-events:none;touch-action:none;}
   #stick{display:none;position:absolute;width:110px;height:110px;border-radius:50%;background:rgba(124,246,255,.08);border:2px solid rgba(124,246,255,.28);}
   #knob{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(124,246,255,.4);left:50%;top:50%;transform:translate(-50%,-50%);}
-  #fireBtn{position:absolute;bottom:26px;right:20px;width:112px;height:112px;border-radius:50%;background:rgba(255,92,122,.3);border:2px solid rgba(255,120,150,.62);color:#ffe3ea;font-weight:800;font-size:14px;letter-spacing:2px;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
+  #fireBtn{position:absolute;bottom:26px;right:20px;width:112px;height:112px;border-radius:50%;background:rgba(255,92,122,.3);border:2px solid rgba(255,120,150,.62);color:#ffe3ea;font-weight:800;font-size:14px;letter-spacing:2px;display:flex;align-items:center;justify-content:center;pointer-events:auto;touch-action:none;}
   #swapBtn{position:absolute;bottom:150px;right:52px;width:64px;height:64px;border-radius:50%;background:rgba(124,246,255,.18);border:2px solid rgba(124,246,255,.45);color:#7cf6ff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
   #autoBtn{position:absolute;bottom:150px;right:132px;width:64px;height:64px;border-radius:50%;background:rgba(255,224,138,.16);border:2px solid rgba(255,224,138,.5);color:#ffe08a;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:auto;opacity:.55;}
   #autoBtn.on{opacity:1;background:rgba(255,224,138,.42);box-shadow:0 0 16px rgba(255,224,138,.6);}
@@ -111,7 +111,7 @@
 <button id="bigFire">FIRE</button>
 <div id="menu" class="overlay">
   <h1>NEON STRIKE 3D</h1>
-  <div class="sub">Block World · Boss Missions · 10 Maps · v6</div>
+  <div class="sub">Tactical Combat · Human Hostiles · 10 Missions · v7</div>
   <div class="tabs">
     <div class="tab on" id="tabCamp">CAMPAIGN</div>
     <div class="tab" id="tabFree">FREE PLAY</div>
@@ -120,8 +120,8 @@
   <div class="wrap hidden" id="freeWrap"><div class="maps" id="maps"></div></div>
   <button id="start">▶ START MISSION</button>
   <div class="keys">
-    <kbd>W A S D</kbd> move &nbsp; <kbd>MOUSE</kbd> aim &nbsp; <kbd>CLICK/HOLD</kbd> shoot &nbsp; <kbd>R</kbd> reload &nbsp; <kbd>SHIFT</kbd> dash &nbsp; <kbd>ESC</kbd> pause<br>
-    <kbd>1-5</kbd> / <kbd>Q</kbd> weapon &nbsp;·&nbsp; PC: on-screen ▲▼◀▶ + FIRE buttons bhi chalte hain &nbsp;·&nbsp; Mobile: left = move · right drag = look · FIRE / SWAP / AUTO
+    <kbd>W A S D</kbd> move &nbsp; <kbd>MOUSE</kbd> aim &nbsp; <kbd>CLICK/HOLD</kbd> fire &nbsp; <kbd>R</kbd> reload &nbsp; <kbd>SHIFT</kbd> dash &nbsp; <kbd>ESC</kbd> pause<br>
+    <kbd>1-5</kbd> / <kbd>Q</kbd> weapon &nbsp;·&nbsp; PC: on-screen movement + FIRE controls &nbsp;·&nbsp; Mobile: left stick = move · right side = look · FIRE / SWAP / AUTO
   </div>
 </div>
 <div id="touch">

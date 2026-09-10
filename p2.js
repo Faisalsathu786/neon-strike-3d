@@ -13,10 +13,10 @@ const WEAPONS=[
  {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#ff5c7a',rocket:true,sfx:'rocket'}
 ];
 const ETYPE={
- grunt :{hp:42, speed:3.4,scale:1.00,color:'#ff5c7a',dmg:9, fire:1.6,range:30,score:60},
- runner:{hp:26, speed:6.2,scale:0.85,color:'#ffb02e',dmg:6, fire:1.3,range:16,score:50},
- tank  :{hp:140,speed:2.0,scale:1.5, color:'#b06bff',dmg:16,fire:2.2,range:26,score:140},
- sniper:{hp:46, speed:2.6,scale:1.0, color:'#5cffb0',dmg:20,fire:2.6,range:70,score:110}
+ grunt :{hp:42, speed:3.4,scale:1.00,color:'#c94f57',dmg:9, fire:1.6,range:30,score:60},
+ runner:{hp:26, speed:6.2,scale:0.85,color:'#d28b3c',dmg:6, fire:1.3,range:16,score:50},
+ tank  :{hp:140,speed:2.0,scale:1.5, color:'#65717a',dmg:16,fire:2.2,range:26,score:140},
+ sniper:{hp:46, speed:2.6,scale:1.0, color:'#687f72',dmg:20,fire:2.6,range:70,score:110}
 };
 const BOSSES={
  hunter:{name:'HUNTER',hp:760, color:'#ff5c7a',speed:4.2,dmg:12,contact:16,fire:1.4,atks:['dash','spread']},

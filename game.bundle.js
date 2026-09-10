@@ -41,40 +41,48 @@ function P(g,w,h,d,c,x,y,z){const b=box(w,h,d,c);b.position.set(x,y,z);g.add(b);
 /* ---------- block characters (Sandbox style) ---------- */
 function buildHero(){
  const g=new T.Group();
- P(g,1.08,1.32,0.62,'#2ec4b6',0,1.3,0);      /* shirt  */
- P(g,1.02,0.5,0.6,'#22304a',0,0.56,0);        /* hips   */
- P(g,0.44,0.98,0.5,'#22304a',-0.3,0.03,0);    /* legs   */
- P(g,0.44,0.98,0.5,'#22304a',0.3,0.03,0);
- P(g,0.34,1.06,0.4,'#2ec4b6',-0.78,1.34,0);   /* arms   */
- P(g,0.34,1.06,0.4,'#2ec4b6',0.78,1.34,0);
- P(g,0.86,0.86,0.8,'#f2c58a',0,2.42,0);       /* head   */
- P(g,0.94,0.34,0.88,'#3a2a1a',0,2.8,0);       /* hair   */
- P(g,0.17,0.17,0.07,'#ffffff',-0.2,2.48,-0.42);/* eyes  */
- P(g,0.17,0.17,0.07,'#ffffff',0.2,2.48,-0.42);
- P(g,0.08,0.08,0.05,'#1c2740',-0.2,2.48,-0.47);
- P(g,0.08,0.08,0.05,'#1c2740',0.2,2.48,-0.47);
- const gun=P(g,0.2,0.2,0.95,'#ffe08a',0.55,1.36,-0.62);
+ /* A bulky field operator: body armour, utility belt, helmet and rifle. */
+ P(g,1.34,1.38,0.72,'#3b4652',0,1.32,0);
+ P(g,1.05,0.52,0.68,'#202833',0,0.55,0);
+ P(g,0.5,1.02,0.54,'#28343d',-0.34,0.03,0);
+ P(g,0.5,1.02,0.54,'#28343d',0.34,0.03,0);
+ P(g,0.42,1.08,0.46,'#65727b',-0.88,1.34,0);
+ P(g,0.42,1.08,0.46,'#65727b',0.88,1.34,0);
+ P(g,0.9,0.88,0.82,'#b87951',0,2.42,0);
+ P(g,1.02,0.3,0.94,'#202833',0,2.85,0);
+ P(g,1.16,0.16,0.98,'#303c47',0,3.02,0);
+ P(g,0.18,0.18,0.08,'#d9e4e8',-0.22,2.48,-0.44);
+ P(g,0.18,0.18,0.08,'#d9e4e8',0.22,2.48,-0.44);
+ P(g,0.1,0.1,0.05,'#18222b',-0.22,2.48,-0.49);
+ P(g,0.1,0.1,0.05,'#18222b',0.22,2.48,-0.49);
+ P(g,0.26,0.34,0.18,'#171d24',-0.42,1.22,-0.4);
+ P(g,0.26,0.34,0.18,'#171d24',0.42,1.22,-0.4);
+ const gun=P(g,0.22,0.24,1.08,'#1a2229',0.58,1.36,-0.68);
+ P(g,0.12,0.16,0.34,'#8b6a43',0.58,1.12,-1.12);
  g.userData.gun=gun;
  g.traverse(o=>{if(o.isMesh)o.castShadow=true;});
  return g;
 }
 function buildMonster(color,scale){
  const s=scale||1;const g=new T.Group();
- const dark='#2a2a3d';
- P(g,1.0*s,1.1*s,0.7*s,dark,0,1.15*s,0);
- P(g,0.44*s,0.8*s,0.44*s,dark,-0.38*s,0.4*s,0);
- P(g,0.44*s,0.8*s,0.44*s,dark,0.38*s,0.4*s,0);
- P(g,0.34*s,0.95*s,0.36*s,dark,-0.72*s,1.2*s,0);
- P(g,0.34*s,0.95*s,0.36*s,dark,0.72*s,1.2*s,0);
- P(g,0.92*s,0.9*s,0.86*s,color,0,2.15*s,0);
- P(g,0.2*s,0.2*s,0.09*s,'#ffffff',-0.22*s,2.24*s,-0.44*s);
- P(g,0.2*s,0.2*s,0.09*s,'#ffffff',0.22*s,2.24*s,-0.44*s);
- P(g,0.09*s,0.14*s,0.06*s,'#101018',-0.22*s,2.2*s,-0.49*s);
- P(g,0.09*s,0.14*s,0.06*s,'#101018',0.22*s,2.2*s,-0.49*s);
- /* mouth / spikes */
- P(g,0.5*s,0.1*s,0.06*s,'#101018',0,2.0*s,-0.45*s);
- P(g,0.14*s,0.34*s,0.14*s,'#ffffff',-0.3*s,2.72*s,0);
- P(g,0.14*s,0.34*s,0.14*s,'#ffffff',0.3*s,2.72*s,0);
+ /* Human hostile: tactical vest, helmet, skin and compact rifle. */
+ const uniform='#39444d',dark='#1e272e',skin='#a86f4e';
+ P(g,1.28*s,1.3*s,0.72*s,uniform,0,1.25*s,0);
+ P(g,1.02*s,0.46*s,0.66*s,dark,0,0.5*s,0);
+ P(g,0.46*s,0.88*s,0.5*s,dark,-0.34*s,0.03*s,0);
+ P(g,0.46*s,0.88*s,0.5*s,dark,0.34*s,0.03*s,0);
+ P(g,0.38*s,1.0*s,0.44*s,uniform,-0.82*s,1.25*s,0);
+ P(g,0.38*s,1.0*s,0.44*s,uniform,0.82*s,1.25*s,0);
+ P(g,0.82*s,0.86*s,0.78*s,skin,0,2.35*s,0);
+ P(g,0.98*s,0.28*s,0.9*s,dark,0,2.77*s,0);
+ P(g,1.12*s,0.15*s,0.94*s,uniform,0,2.94*s,0);
+ P(g,0.18*s,0.16*s,0.07*s,'#d8e1e4',-0.2*s,2.4*s,-0.42*s);
+ P(g,0.18*s,0.16*s,0.07*s,'#d8e1e4',0.2*s,2.4*s,-0.42*s);
+ P(g,0.08*s,0.08*s,0.05*s,'#111820',-0.2*s,2.4*s,-0.47*s);
+ P(g,0.08*s,0.08*s,0.05*s,'#111820',0.2*s,2.4*s,-0.47*s);
+ P(g,0.24*s,0.32*s,0.18*s,dark,-0.4*s,1.2*s,-0.4*s);
+ P(g,0.24*s,0.32*s,0.18*s,dark,0.4*s,1.2*s,-0.4*s);
+ P(g,0.2*s,0.22*s,0.9*s,'#151c22',0.55*s,1.28*s,-0.62*s);
  g.traverse(o=>{if(o.isMesh)o.castShadow=true;});
  return g;
 }
@@ -265,10 +273,10 @@ const WEAPONS=[
  {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#ff5c7a',rocket:true,sfx:'rocket'}
 ];
 const ETYPE={
- grunt :{hp:42, speed:3.4,scale:1.00,color:'#ff5c7a',dmg:9, fire:1.6,range:30,score:60},
- runner:{hp:26, speed:6.2,scale:0.85,color:'#ffb02e',dmg:6, fire:1.3,range:16,score:50},
- tank  :{hp:140,speed:2.0,scale:1.5, color:'#b06bff',dmg:16,fire:2.2,range:26,score:140},
- sniper:{hp:46, speed:2.6,scale:1.0, color:'#5cffb0',dmg:20,fire:2.6,range:70,score:110}
+ grunt :{hp:42, speed:3.4,scale:1.00,color:'#c94f57',dmg:9, fire:1.6,range:30,score:60},
+ runner:{hp:26, speed:6.2,scale:0.85,color:'#d28b3c',dmg:6, fire:1.3,range:16,score:50},
+ tank  :{hp:140,speed:2.0,scale:1.5, color:'#65717a',dmg:16,fire:2.2,range:26,score:140},
+ sniper:{hp:46, speed:2.6,scale:1.0, color:'#687f72',dmg:20,fire:2.6,range:70,score:110}
 };
 const BOSSES={
  hunter:{name:'HUNTER',hp:760, color:'#ff5c7a',speed:4.2,dmg:12,contact:16,fire:1.4,atks:['dash','spread']},
@@ -525,6 +533,8 @@ function update(dt){
  const av=worldDir();const al=Math.hypot(av.x,av.z)||1;player.ang=Math.atan2(av.x,av.z);
  player.mesh.rotation.y=Math.atan2(-(av.x/al),-(av.z/al));
  player.walk+=dt*(ml>0.05?11:0);
+ if(ml>0.05 && Math.sin(player.walk)>0.96 && (player._stepT||0)<=0){sfxFootstep();player._stepT=0.18;}
+ player._stepT=Math.max(0,(player._stepT||0)-dt);
  player.mesh.position.set(player.x,ml>0.05?Math.abs(Math.sin(player.walk))*0.13:0,player.z);
 
  /* shooting */
@@ -775,6 +785,11 @@ function sfxTone(freq,dur,type,vol,slideTo,delay){
  o.connect(g);g.connect(c.destination);
  o.start(t);o.stop(t+dur+0.03);
 }
+function sfxFootstep(){
+ const c=ac();if(!c||!SFXM)return;
+ sfxNoise(0.055,0.055,520,0.7);
+ sfxTone(75,0.055,'sine',0.045,45);
+}
 function sfxNoise(dur,vol,cut,q,delay){
  const c=ac();if(!c||!SFXM)return;
  const t=c.currentTime+(delay||0);
@@ -803,6 +818,7 @@ function sfx(name){
   case 'reload': sfxTone(320,0.05,'square',0.1,520);sfxTone(520,0.06,'square',0.1,300,0.14);break;
   case 'pickup': sfxTone(880,0.08,'sine',0.16,1320);break;
   case 'hurt': sfxTone(210,0.2,'sawtooth',0.22,90);break;
+  case 'armor': sfxNoise(0.09,0.13,1700,1);sfxTone(180,0.08,'square',0.06,90);break;
   case 'dash': sfxNoise(0.18,0.17,2000,1);break;
   case 'wave': sfxTone(520,0.12,'triangle',0.16,780);sfxTone(780,0.18,'triangle',0.16,1040,0.13);break;
   case 'boss': sfxTone(110,0.5,'sawtooth',0.22,60);sfxTone(88,0.7,'sawtooth',0.22,45,0.26);break;

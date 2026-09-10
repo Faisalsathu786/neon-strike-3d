@@ -28,6 +28,11 @@ function sfxTone(freq,dur,type,vol,slideTo,delay){
  o.connect(g);g.connect(c.destination);
  o.start(t);o.stop(t+dur+0.03);
 }
+function sfxFootstep(){
+ const c=ac();if(!c||!SFXM)return;
+ sfxNoise(0.055,0.055,520,0.7);
+ sfxTone(75,0.055,'sine',0.045,45);
+}
 function sfxNoise(dur,vol,cut,q,delay){
  const c=ac();if(!c||!SFXM)return;
  const t=c.currentTime+(delay||0);
@@ -56,6 +61,7 @@ function sfx(name){
   case 'reload': sfxTone(320,0.05,'square',0.1,520);sfxTone(520,0.06,'square',0.1,300,0.14);break;
   case 'pickup': sfxTone(880,0.08,'sine',0.16,1320);break;
   case 'hurt': sfxTone(210,0.2,'sawtooth',0.22,90);break;
+  case 'armor': sfxNoise(0.09,0.13,1700,1);sfxTone(180,0.08,'square',0.06,90);break;
   case 'dash': sfxNoise(0.18,0.17,2000,1);break;
   case 'wave': sfxTone(520,0.12,'triangle',0.16,780);sfxTone(780,0.18,'triangle',0.16,1040,0.13);break;
   case 'boss': sfxTone(110,0.5,'sawtooth',0.22,60);sfxTone(88,0.7,'sawtooth',0.22,45,0.26);break;
