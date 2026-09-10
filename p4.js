@@ -91,7 +91,7 @@ function startGame(){
  if(!('ontouchstart' in window)&&cv.requestPointerLock)cv.requestPointerLock();
 }
 function levelClear(){
- state='levelclear';
+ state='levelclear';sfx('clear');
  if(mode==='campaign'){unlocked=Math.min(LEVELS.length,Math.max(unlocked,level+2));
   try{localStorage.setItem('neon3d_unlocked',String(unlocked));}catch(e){}}
  const more=(mode==='campaign'&&level+1<LEVELS.length&&level+1<unlocked);

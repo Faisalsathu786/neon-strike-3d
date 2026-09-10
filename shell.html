@@ -55,6 +55,7 @@
   #wave{position:fixed;top:34%;left:50%;transform:translate(-50%,-50%);font-size:clamp(24px,5.2vw,46px);font-weight:800;letter-spacing:8px;color:#fff;text-shadow:0 0 30px #7cf6ff,0 2px 10px #000;opacity:0;z-index:6;pointer-events:none;text-align:center;}
   #center{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;background:rgba(5,6,10,.76);pointer-events:auto;}
   #center.hidden{display:none;}
+  #muteBtn{position:fixed;top:12px;right:12px;z-index:9;width:44px;height:44px;border-radius:12px;border:1px solid #2b3656;background:rgba(10,14,28,.72);color:#dfe6ff;font-size:18px;line-height:1;cursor:pointer;pointer-events:auto;touch-action:manipulation;}
   #center h2{font-size:clamp(24px,5.2vw,46px);letter-spacing:5px;margin-bottom:8px;text-align:center;padding:0 14px;}
   #center p{color:#a9b2d8;margin-bottom:20px;font-size:14.5px;text-align:center;padding:0 18px;}
   #cBtn{position:relative;z-index:21;pointer-events:auto;touch-action:manipulation;}
@@ -90,9 +91,10 @@
 <div id="crosshair"></div>
 <div id="wave"></div>
 <div id="center" class="hidden"><h2 id="cTitle"></h2><p id="cSub"></p><button id="cBtn"></button></div>
+<button id="muteBtn">🔊</button>
 <div id="menu" class="overlay">
   <h1>NEON STRIKE 3D</h1>
-  <div class="sub">Block World · Boss Missions · 10 Maps · v4</div>
+  <div class="sub">Block World · Boss Missions · 10 Maps · v5</div>
   <div class="tabs">
     <div class="tab on" id="tabCamp">CAMPAIGN</div>
     <div class="tab" id="tabFree">FREE PLAY</div>

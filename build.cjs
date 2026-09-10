@@ -2,7 +2,7 @@ const fs=require('fs');
 const path=require('path');
 const d='/home/node/.openclaw/workspace/projects/shooter3d/';
 const three=fs.readFileSync('/home/node/.openclaw/workspace/.openclaw/tmp/three.min.js','utf8');
-const parts=['p1.js','p2.js','p3.js','p4.js'].map(f=>fs.readFileSync(d+f,'utf8'));
+const parts=['p1.js','p2.js','p3.js','p4.js','p5.js'].map(f=>fs.readFileSync(d+f,'utf8'));
 const game=parts.join('\n');
 fs.writeFileSync(d+'game.bundle.js',game);
 const shell=fs.readFileSync(d+'shell.html','utf8');

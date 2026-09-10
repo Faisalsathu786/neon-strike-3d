@@ -16,11 +16,11 @@ function moveBullets(dt){
   if(!dead&&b.owner==='p'){
    if(hitWalls(b.x,b.z,0.18)){if(b.rocket)explode(b.x,b.y,b.z,7,45,b.color);dead=true;}
    if(!dead)for(const e of enemies){if(e.dead)continue;if(b.hit&&b.hit.indexOf(e)>=0)continue;
-    if(Math.hypot(e.x-b.x,e.cy-b.y,e.z-b.z)<e.r+0.4){
+    if(Math.abs(e.cy-b.y)<e.r+0.9&&Math.hypot(e.x-b.x,e.z-b.z)<e.r+0.5){
       if(b.rocket){explode(b.x,b.y,b.z,7.5,45,b.color);dead=true;break;}
       e.hp-=b.dmg;e.flash=0.35;if(e.hp<=0)killEnemy(e);
       if(b.pierce>0){b.pierce--;b.hit=b.hit||[];b.hit.push(e);}else{dead=true;break;}}}
-   if(!dead&&boss&&!boss.dead&&Math.hypot(boss.x-b.x,boss.cy-b.y,boss.z-b.z)<boss.r+0.5){
+   if(!dead&&boss&&!boss.dead&&Math.abs(boss.cy-b.y)<boss.r+1.2&&Math.hypot(boss.x-b.x,boss.z-b.z)<boss.r+0.6){
      if(b.rocket){explode(b.x,b.y,b.z,8,45,b.color);dead=true;}
      else{boss.hp-=b.dmg;boss.flash=0.3;if(boss.hp<=0)killBoss();if(b.pierce>0)b.pierce--;else dead=true;}}
   }
@@ -38,7 +38,7 @@ function update(dt){
   if(Math.hypot(player.x-pk.x,player.z-pk.z)<1.6){
     if(pk.type==='hp')player.hp=Math.min(player.maxHp,player.hp+25);
     else{player.mags[player.wi]=WEAPONS[player.wi].mag;player.reloading=false;}
-    burst(pk.x,1.2,pk.z,pk.type==='hp'?'#5cffb0':'#ffe08a',14,6);
+    burst(pk.x,1.2,pk.z,pk.type==='hp'?'#5cffb0':'#ffe08a',14,6);sfx('pickup');
     scene.remove(pk.m);pickups.splice(i,1);updateHud();}}
  shake*=Math.max(0,1-dt*6);player.hitFlash=Math.max(0,player.hitFlash-dt*4);
  player.contactCd=Math.max(0,player.contactCd-dt);

@@ -6,11 +6,11 @@ sun.shadow.camera.left=-SHAD;sun.shadow.camera.right=SHAD;sun.shadow.camera.top=
 sun.shadow.camera.updateProjectionMatrix();
 
 const WEAPONS=[
- {name:'PISTOL', mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#ffe08a'},
- {name:'SMG',    mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#7cf6ff'},
- {name:'SHOTGUN',mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#ffb02e'},
- {name:'SNIPER', mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#5cffb0',pierce:3},
- {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#ff5c7a',rocket:true}
+ {name:'PISTOL', mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#ffe08a',sfx:'pistol'},
+ {name:'SMG',    mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#7cf6ff',sfx:'smg'},
+ {name:'SHOTGUN',mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#ffb02e',sfx:'shotgun'},
+ {name:'SNIPER', mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#5cffb0',pierce:3,sfx:'sniper'},
+ {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#ff5c7a',rocket:true,sfx:'rocket'}
 ];
 const ETYPE={
  grunt :{hp:42, speed:3.4,scale:1.00,color:'#ff5c7a',dmg:9, fire:1.6,range:30,score:60},
@@ -101,20 +101,24 @@ function shoot(){
  if(player.reloading)return;
  if(player.mags[player.wi]<=0){startReload();return;}
  player.mags[player.wi]--;player.fireCd=w.fire;
- const d=worldDir();const base=Math.atan2(d.x,d.z);
- const horiz=Math.max(0.02,Math.hypot(d.x,d.z));
+ const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw);
+ const pitch=clamp(0.34-camPitch,-0.7,0.7);
+ const dy0=Math.sin(pitch),hz=Math.max(0.15,Math.cos(pitch));
+ const base=Math.atan2(fx,fz);
+ const mx0=player.x+fx*1.0,mz0=player.z+fz*1.0,my0=1.75;
  for(let i=0;i<w.pellets;i++){
    const a=base+rnd(-w.spread,w.spread);
-   const dir=new T.Vector3(Math.sin(a)*horiz,d.y+rnd(-w.spread,w.spread)*0.6,Math.cos(a)*horiz).normalize();
+   const dir=new T.Vector3(Math.sin(a)*hz,dy0+rnd(-w.spread,w.spread)*0.5,Math.cos(a)*hz).normalize();
    const m=sph(w.rocket?0.3:0.16,w.color,8);
-   m.position.set(player.x+Math.sin(player.ang)*0.9,1.7,player.z+Math.cos(player.ang)*0.9);
+   m.position.set(mx0,my0,mz0);
    scene.add(m);
-   bullets.push({m,x:m.position.x,y:1.7,z:m.position.z,dx:dir.x,dy:dir.y,dz:dir.z,spd:w.speed,
-     dmg:w.dmg,owner:'p',life:w.rocket?3:1.6,color:w.color,pierce:w.pierce||0,rocket:!!w.rocket,hit:null});
+   bullets.push({m,x:mx0,y:my0,z:mz0,dx:dir.x,dy:dir.y,dz:dir.z,spd:w.speed,
+     dmg:w.dmg,owner:'p',life:w.rocket?3:2.2,color:w.color,pierce:w.pierce||0,rocket:!!w.rocket,hit:null});
  }
+ sfx(w.sfx||'pistol');
  const g=player.mesh.userData.gun;g.scale.set(1,1,1.55);
  setTimeout(()=>{g.scale.set(1,1,1);},70);
- burst(player.x+Math.sin(player.ang)*1.1,1.7,player.z+Math.cos(player.ang)*1.1,w.color,5,3);
+ burst(mx0,my0,mz0,w.color,5,3);
  shake=Math.min(shake+w.fire*2,0.5);
 }
 function eshot(e,tx,tz,ty,spd,dmg){
@@ -123,7 +127,7 @@ function eshot(e,tx,tz,ty,spd,dmg){
  bullets.push({m,x:e.x,y:e.cy,z:e.z,dx:dx/L,dy:dy/L,dz:dz/L,spd,dmg,owner:'e',life:3,color:e.monsterColor});
 }
 function explode(x,y,z,radius,dmg,color){
- burst(x,y,z,color,26,9);burst(x,y,z,'#ffe08a',12,6);shake=Math.min(shake+0.9,1.2);
+ sfx('explode');burst(x,y,z,color,26,9);burst(x,y,z,'#ffe08a',12,6);shake=Math.min(shake+0.9,1.2);
  for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-x,e.z-z);
   if(d<radius+e.r){const f=Math.max(0.3,1-d/(radius+e.r));e.hp-=dmg*f;e.flash=0.4;if(e.hp<=0)killEnemy(e);}}
  if(boss&&!boss.dead){const d=Math.hypot(boss.x-x,boss.z-z);
@@ -155,6 +159,7 @@ function spawnBoss(key){
  boss={key,type:c.name,x:p.x,z:p.z,r:1.9,cy:3.6,mesh,hp:c.hp*sc,maxHp:c.hp*sc,speed:c.speed,dmg:c.dmg,
   contact:c.contact,fire:c.fire,atks:c.atks,fireCd:2,atkCd:2,phase:1,flash:0,dead:false,state:'idle',t:0,ang:0,dashA:0,
   monsterColor:c.color};
+ sfx('boss');
 }
 function startWave(){
  wave++;bossSpawned=false;spawnQueue.length=0;
@@ -167,24 +172,24 @@ function startWave(){
   spawnQueue.push(type);
  }
  announce('WAVE '+wave,(mode==='campaign'?LEVELS[level].name:'SURVIVAL'));
- updateHud();
+ sfx('wave');updateHud();
 }
-function killEnemy(e){e.dead=true;score+=e.score;burst(e.x,e.cy,e.z,e.monsterColor,18,7);
+function killEnemy(e){e.dead=true;score+=e.score;sfx('kill');burst(e.x,e.cy,e.z,e.monsterColor,18,7);
  scene.remove(e.mesh);dispose(e.mesh);
  const r=Math.random();if(r<0.14)addPickup(e.x,e.z,'hp');else if(r<0.27)addPickup(e.x,e.z,'ammo');}
-function killBoss(){boss.dead=true;score+=1500;
+function killBoss(){boss.dead=true;score+=1500;sfx('explode');sfx('clear');
  burst(boss.x,boss.cy,boss.z,boss.monsterColor,60,12);burst(boss.x,boss.cy,boss.z,'#ffe08a',30,9);shake=1.6;
  scene.remove(boss.mesh);dispose(boss.mesh);boss=null;
  if(mode==='campaign')levelClear();}
 function addPickup(x,z,type){
  const m=new T.Mesh(new T.BoxGeometry(0.7,0.7,0.7),new T.MeshBasicMaterial({color:new T.Color(type==='hp'?'#5cffb0':'#ffe08a')}));
  m.position.set(x,1.0,z);scene.add(m);pickups.push({x,z,m,type,life:18});}
-function startReload(){const w=WEAPONS[player.wi];if(player.reloading||player.mags[player.wi]>=w.mag)return;player.reloading=true;player.reload=w.reload;}
+function startReload(){const w=WEAPONS[player.wi];if(player.reloading||player.mags[player.wi]>=w.mag)return;player.reloading=true;player.reload=w.reload;sfx('reload');}
 function switchWeapon(i){if(i<0||i>=WEAPONS.length||i===player.wi)return;player.wi=i;player.reloading=false;player.reload=0;player.fireCd=0.15;
  if(player.mesh)player.mesh.userData.gun.material.color.set(WEAPONS[i].color);updateHud();}
-function tryDash(){if(player.dashCd>0||state!=='play')return;player.dashCd=1.2;player.dashT=0.16;
+function tryDash(){if(player.dashCd>0||state!=='play')return;player.dashCd=1.2;player.dashT=0.16;sfx('dash');
  player.dx=Math.sin(player.ang);player.dz=Math.cos(player.ang);}
-function playerHit(d){if(state!=='play')return;player.hp-=d;player.hitFlash=1;shake=Math.min(shake+0.5,1);
+function playerHit(d){if(state!=='play')return;player.hp-=d;player.hitFlash=1;shake=Math.min(shake+0.5,1);sfx('hurt');
  burst(player.x,1.6,player.z,'#ff5c7a',8,5);updateHud();
- if(player.hp<=0){player.hp=0;updateHud();state='dead';showCenter('MISSION FAILED','Score '+score+' · wave '+wave,'↻ RETRY');}}
+ if(player.hp<=0){player.hp=0;updateHud();state='dead';sfx('dead');showCenter('MISSION FAILED','Score '+score+' · wave '+wave,'↻ RETRY');}}
 function moveXZ(o,dx,dz){if(!hitWalls(o.x+dx,o.z,o.r))o.x+=dx;if(!hitWalls(o.x,o.z+dz,o.r))o.z+=dz;}
