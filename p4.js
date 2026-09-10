@@ -86,9 +86,8 @@ function startGame(){
  document.getElementById('hud').style.display='flex';
  document.getElementById('wslots').style.display='flex';
  document.getElementById('crosshair').style.display='block';
- document.getElementById('touch').style.display=('ontouchstart' in window)?'block':'none';
+ document.getElementById('touch').style.display=IS_TOUCH?'block':'none';
  state='play';startWave();updateHud();last=performance.now();
- if(!('ontouchstart' in window)&&cv.requestPointerLock)cv.requestPointerLock();
 }
 function levelClear(){
  state='levelclear';sfx('clear');
@@ -99,12 +98,11 @@ function levelClear(){
  if(document.exitPointerLock)document.exitPointerLock();
 }
 function pauseGame(){if(state!=='play')return;state='pause';showCenter('PAUSED','Score '+score+' · wave '+wave,'▶ RESUME');if(document.exitPointerLock)document.exitPointerLock();}
-function resumeGame(){const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';state='play';last=performance.now();
- if(!('ontouchstart' in window)&&cv.requestPointerLock)cv.requestPointerLock();}
+function resumeGame(){const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';state='play';last=performance.now();}
 function centerAction(){
  const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';
  if(state==='dead')startGame();
- else if(state==='clear'){startWave();state='play';last=performance.now();if(!('ontouchstart' in window)&&cv.requestPointerLock)cv.requestPointerLock();}
+ else if(state==='clear'){startWave();state='play';last=performance.now();}
  else if(state==='levelclear'){if(mode==='campaign'&&level+1<LEVELS.length&&level+1<unlocked){level++;startGame();}else backToMenu();}
  else if(state==='pause')resumeGame();
 }
@@ -119,9 +117,14 @@ buildLevels();buildMaps();setMode('campaign');
 initMobile();
 
 let last=performance.now();
+let fpsAcc=0,fpsN=0,prCur=renderer.getPixelRatio();
 function loop(now){
  requestAnimationFrame(loop);
  let dt=(now-last)/1000;last=now;if(dt>0.05)dt=0.05;
+ fpsAcc+=dt;fpsN++;
+ if(fpsN>=45){const avg=fpsAcc/fpsN;fpsAcc=0;fpsN=0;
+  if(avg>0.032&&prCur>0.7){prCur=Math.max(0.7,prCur-0.25);renderer.setPixelRatio(prCur);}
+  else if(avg<0.019&&prCur<MAXPR){prCur=Math.min(MAXPR,prCur+0.25);renderer.setPixelRatio(prCur);}}
  try{
   update(dt);updateCamera(dt);
   renderer.render(scene,camera);

@@ -9,22 +9,28 @@ function moveBullets(dt){
  for(let i=bullets.length-1;i>=0;i--){
   const b=bullets[i];b.life-=dt;
   const step=b.spd*dt;
+  const px=b.x,py=b.y,pz=b.z;
   b.x+=b.dx*step;b.y+=b.dy*step;b.z+=b.dz*step;
   b.m.position.set(b.x,b.y,b.z);
   let dead=b.life<=0;
   if(!dead&&(b.x<-HW+0.5||b.x>HW-0.5||b.z<-HD+0.5||b.z>HD-0.5||b.y<0.1))dead=true;
   if(!dead&&b.owner==='p'){
-   if(hitWalls(b.x,b.z,0.18)){if(b.rocket)explode(b.x,b.y,b.z,7,45,b.color);dead=true;}
+   if(segHitsWalls(px,pz,b.x,b.z)){if(b.rocket)explode(b.x,b.y,b.z,7,45,b.color);dead=true;}
    if(!dead)for(const e of enemies){if(e.dead)continue;if(b.hit&&b.hit.indexOf(e)>=0)continue;
-    if(Math.abs(e.cy-b.y)<e.r+0.9&&Math.hypot(e.x-b.x,e.z-b.z)<e.r+0.5){
+    if(segHit(px,py,pz,b.x,b.y,b.z,e.x,e.cy,e.z,e.r+0.45)){
       if(b.rocket){explode(b.x,b.y,b.z,7.5,45,b.color);dead=true;break;}
-      e.hp-=b.dmg;e.flash=0.35;if(e.hp<=0)killEnemy(e);
+      e.hp-=b.dmg;e.flash=0.35;spark(b.x,b.y,b.z,b.color);sfx('hit');
+      if(e.hp<=0)killEnemy(e);
       if(b.pierce>0){b.pierce--;b.hit=b.hit||[];b.hit.push(e);}else{dead=true;break;}}}
-   if(!dead&&boss&&!boss.dead&&Math.abs(boss.cy-b.y)<boss.r+1.2&&Math.hypot(boss.x-b.x,boss.z-b.z)<boss.r+0.6){
+   if(!dead&&boss&&!boss.dead&&segHit(px,py,pz,b.x,b.y,b.z,boss.x,boss.cy,boss.z,boss.r+0.5)){
      if(b.rocket){explode(b.x,b.y,b.z,8,45,b.color);dead=true;}
-     else{boss.hp-=b.dmg;boss.flash=0.3;if(boss.hp<=0)killBoss();if(b.pierce>0)b.pierce--;else dead=true;}}
+     else{boss.hp-=b.dmg;boss.flash=0.3;spark(b.x,b.y,b.z,b.color);sfx('hit');
+      if(boss.hp<=0)killBoss();if(b.pierce>0)b.pierce--;else dead=true;}}
   }
-  if(!dead&&b.owner==='e'&&Math.hypot(player.x-b.x,1.7-b.y,player.z-b.z)<1.0){playerHit(b.dmg);dead=true;}
+  if(!dead&&b.owner==='e'){
+   if(segHitsWalls(px,pz,b.x,b.z))dead=true;
+   else if(segHit(px,py,pz,b.x,b.y,b.z,player.x,1.7,player.z,0.95)){playerHit(b.dmg);dead=true;}
+  }
   if(dead){scene.remove(b.m);b.m.geometry.dispose();bullets.splice(i,1);}
  }
 }
@@ -51,6 +57,10 @@ function update(dt){
  if(keys['s']||keys['arrowdown']){mx-=fx;mz-=fz;}
  if(keys['d']||keys['arrowright']){mx+=rx;mz+=rz;}
  if(keys['a']||keys['arrowleft']){mx-=rx;mz-=rz;}
+ if(BTN.f){mx+=fx;mz+=fz;}
+ if(BTN.b){mx-=fx;mz-=fz;}
+ if(BTN.r){mx+=rx;mz+=rz;}
+ if(BTN.l){mx-=rx;mz-=rz;}
  if(TOUCH.move.id!==null){mx+=fx*(-TOUCH.move.dy)+rx*TOUCH.move.dx;mz+=fz*(-TOUCH.move.dy)+rz*TOUCH.move.dx;}
  const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml;}
  player.dashCd=Math.max(0,player.dashCd-dt);
@@ -64,7 +74,7 @@ function update(dt){
 
  /* shooting */
  player.fireCd-=dt;
- if((mouseDown||TOUCH.fire)&&player.fireCd<=0&&!player.reloading)shoot();
+ if((mouseDown||TOUCH.fire||BTN.fire||AUTO)&&player.fireCd<=0&&!player.reloading)shoot();
  if(player.reloading){player.reload-=dt;if(player.reload<=0){player.mags[player.wi]=WEAPONS[player.wi].mag;player.reloading=false;updateHud();}}
 
  moveBullets(dt);

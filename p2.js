@@ -55,14 +55,17 @@ addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;
  if(k>='1'&&k<='5'&&state==='play')switchWeapon(parseInt(k)-1);});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
 const SENS=0.0026;
-cv.addEventListener('click',()=>{if(state==='play'&&!('ontouchstart' in window)&&document.pointerLockElement!==cv){cv.requestPointerLock&&cv.requestPointerLock();}});
-document.addEventListener('mousemove',e=>{if(document.pointerLockElement!==cv)return;
- camYaw-=e.movementX*SENS;camPitch=clamp(camPitch+e.movementY*SENS,-0.15,0.75);});
+document.addEventListener('mousemove',e=>{
+ if(document.pointerLockElement===cv||e.target===cv){
+  camYaw-=e.movementX*SENS;camPitch=clamp(camPitch+e.movementY*SENS,-0.15,0.75);
+ }
+});
 cv.addEventListener('mousedown',e=>{if(e.button===0)mouseDown=true;});
 addEventListener('mouseup',()=>{mouseDown=false;});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 
 const TOUCH={move:{id:null,ox:0,oy:0,dx:0,dy:0},look:{id:null,lx:0,ly:0},fire:false};
+const BTN={f:false,b:false,l:false,r:false,fire:false};let AUTO=false;
 function initMobile(){
  if(!('ontouchstart' in window))return;
  document.getElementById('touch').style.display='block';
@@ -125,6 +128,7 @@ function eshot(e,tx,tz,ty,spd,dmg){
  const dx=tx-e.x,dy=ty-e.cy,dz=tz-e.z,L=Math.hypot(dx,dy,dz)||1;
  const m=sph(0.16,e.monsterColor,8);m.position.set(e.x,e.cy,e.z);scene.add(m);
  bullets.push({m,x:e.x,y:e.cy,z:e.z,dx:dx/L,dy:dy/L,dz:dz/L,spd,dmg,owner:'e',life:3,color:e.monsterColor});
+ const now=performance.now();if(now-(eshot._t||0)>110){eshot._t=now;sfx('eshot');}
 }
 function explode(x,y,z,radius,dmg,color){
  sfx('explode');burst(x,y,z,color,26,9);burst(x,y,z,'#ffe08a',12,6);shake=Math.min(shake+0.9,1.2);
@@ -134,9 +138,12 @@ function explode(x,y,z,radius,dmg,color){
   if(d<radius+boss.r){boss.hp-=dmg*Math.max(0.3,1-d/(radius+boss.r));boss.flash=0.4;if(boss.hp<=0)killBoss();}}
 }
 function burst(x,y,z,color,n,spd){
+ if(LOW)n=Math.max(2,Math.round(n*0.5));
+ if(parts.length>240)n=Math.min(n,5);
  for(let i=0;i<n;i++){const s=sph(rnd(0.1,0.24),color,6);s.position.set(x,y,z);scene.add(s);
   parts.push({m:s,vx:rnd(-1,1)*spd,vy:rnd(0.4,1.4)*spd,vz:rnd(-1,1)*spd,life:1,max:rnd(0.3,0.7)});}
 }
+function spark(x,y,z,color){burst(x,y,z,color,LOW?2:3,3.4);}
 function spawnPoint(minDist){
  let x=0,z=0,t=0;
  do{const a=rnd(0,TAU),d=rnd(minDist,minDist+16);

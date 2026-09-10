@@ -49,6 +49,8 @@ function sfx(name){
   case 'shotgun': sfxTone(190,0.16,'sawtooth',0.2,60);sfxNoise(0.16,0.26,1300,1);break;
   case 'sniper': sfxTone(1250,0.13,'sawtooth',0.18,120);sfxNoise(0.11,0.18,3600,1);break;
   case 'rocket': sfxTone(150,0.3,'sawtooth',0.2,50);sfxNoise(0.24,0.2,800,1);break;
+  case 'hit': sfxTone(430,0.045,'square',0.06,250);break;
+  case 'eshot': sfxTone(320,0.06,'sawtooth',0.045,180);break;
   case 'kill': sfxTone(260,0.12,'triangle',0.13,120);break;
   case 'explode': sfxNoise(0.42,0.38,600,1);sfxTone(95,0.36,'sawtooth',0.17,40);break;
   case 'reload': sfxTone(320,0.05,'square',0.1,520);sfxTone(520,0.06,'square',0.1,300,0.14);break;
@@ -73,4 +75,31 @@ if(muteBtn)muteBtn.addEventListener('click',e=>{
  try{localStorage.setItem('neon3d_mute',SFXM?'0':'1');}catch(err){}
  refreshMute();
  if(SFXM)sfx('pickup');
+});
+
+/* ============================================================
+   On-screen controls: PC move-pad + fire, mobile auto-fire, aim lock
+   ============================================================ */
+try{document.body.classList.add(IS_TOUCH?'istouch':'ispc');}catch(e){}
+function holdBtn(id,setter){
+ const el=document.getElementById(id);if(!el)return;
+ const on=e=>{if(e.cancelable)e.preventDefault();audioUnlock();setter(true);};
+ const off=e=>{if(e.cancelable)e.preventDefault();setter(false);};
+ el.addEventListener('pointerdown',on);
+ el.addEventListener('pointerup',off);
+ el.addEventListener('pointerleave',off);
+ el.addEventListener('pointercancel',off);
+ el.addEventListener('contextmenu',e=>e.preventDefault());
+}
+holdBtn('pbF',v=>BTN.f=v);holdBtn('pbB',v=>BTN.b=v);holdBtn('pbL',v=>BTN.l=v);holdBtn('pbR',v=>BTN.r=v);holdBtn('bigFire',v=>BTN.fire=v);
+const autoBtnEl=document.getElementById('autoBtn');
+if(autoBtnEl)autoBtnEl.addEventListener('click',e=>{
+ e.preventDefault();e.stopPropagation();audioUnlock();
+ AUTO=!AUTO;autoBtnEl.classList.toggle('on',AUTO);
+});
+const lockBtn=document.getElementById('lockBtn');
+if(lockBtn)lockBtn.addEventListener('click',e=>{
+ e.preventDefault();e.stopPropagation();
+ if(document.pointerLockElement===cv){if(document.exitPointerLock)document.exitPointerLock();}
+ else if(cv.requestPointerLock)cv.requestPointerLock();
 });

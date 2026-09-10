@@ -8,12 +8,15 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
 const TAU=Math.PI*2;
 const lerp=(a,b,t)=>a+(b-a)*t;
+const IS_TOUCH=('ontouchstart' in window)||((navigator.maxTouchPoints||0)>0);
+const LOW=IS_TOUCH;
 
 /* ---------- renderer / scene ---------- */
 const cv=document.getElementById('game');
-const renderer=new T.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-renderer.shadowMap.enabled=true;
+const renderer=new T.WebGLRenderer({canvas:cv,antialias:!LOW,powerPreference:'high-performance'});
+const MAXPR=LOW?1.5:2;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,MAXPR));
+renderer.shadowMap.enabled=!LOW;
 renderer.shadowMap.type=T.PCFSoftShadowMap;
 const scene=new T.Scene();
 const camera=new T.PerspectiveCamera(64,1,0.1,1000);
@@ -22,7 +25,7 @@ addEventListener('resize',resize);resize();
 
 const hemi=new T.HemisphereLight(0xffffff,0x5a6a7a,0.9);scene.add(hemi);
 const sun=new T.DirectionalLight(0xffffff,1.15);
-sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+sun.castShadow=!LOW;sun.shadow.mapSize.set(LOW?1024:2048,LOW?1024:2048);
 const SC=120;
 sun.shadow.camera.left=-SC;sun.shadow.camera.right=SC;sun.shadow.camera.top=SC;sun.shadow.camera.bottom=-SC;
 sun.shadow.camera.near=1;sun.shadow.camera.far=480;
@@ -234,3 +237,15 @@ function treeTop(x,z,h,rng){const c=new T.Mesh(new T.BoxGeometry(3.4,2.6,3.4),ma
 function circleRect(cx,cz,r,R){const nx=clamp(cx,R.cx-R.w/2,R.cx+R.w/2),nz=clamp(cz,R.cz-R.d/2,R.cz+R.d/2);return (cx-nx)**2+(cz-nz)**2<r*r;}
 function hitWalls(x,z,r){for(let i=0;i<colliders.length;i++){if(circleRect(x,z,r,colliders[i]))return true;}return false;}
 function los(x1,z1,x2,z2){const n=Math.ceil(Math.hypot(x2-x1,z2-z1)/2.5);for(let i=1;i<n;i++){const t=i/n;if(hitWalls(x1+(x2-x1)*t,z1+(z2-z1)*t,0.6))return false;}return true;}
+/* swept collisions: a fast bullet must not tunnel past a target between frames */
+function segHit(px,py,pz,qx,qy,qz,cx,cy,cz,r){
+ const dx=qx-px,dy=qy-py,dz=qz-pz;const L2=dx*dx+dy*dy+dz*dz;
+ let t=L2>0?((cx-px)*dx+(cy-py)*dy+(cz-pz)*dz)/L2:0;t=t<0?0:(t>1?1:t);
+ const ex=px+dx*t-cx,ey=py+dy*t-cy,ez=pz+dz*t-cz;
+ return (ex*ex+ey*ey+ez*ez)<(r*r);
+}
+function segHitsWalls(x1,z1,x2,z2){
+ const d=Math.hypot(x2-x1,z2-z1),n=Math.max(1,Math.ceil(d/0.4));
+ for(let i=1;i<=n;i++){const t=i/n;if(hitWalls(x1+(x2-x1)*t,z1+(z2-z1)*t,0.18))return true;}
+ return false;
+}
