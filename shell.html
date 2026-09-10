@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NEON STRIKE 3D — Block Campaign</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{width:100%;height:100%;overflow:hidden;background:#8fd0ff;font-family:'Segoe UI',system-ui,sans-serif;user-select:none;}
+  #game{display:block;width:100vw;height:100vh;touch-action:none;}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 30%,#1c2545 0%,#070a16 78%);color:#e8ecff;text-align:center;padding:16px;z-index:10;}
+  .overlay.hidden{display:none;}
+  h1{font-size:clamp(28px,6.4vw,54px);letter-spacing:6px;font-weight:800;
+    background:linear-gradient(90deg,#7cf6ff,#9a7bff,#ff6ec7);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:2px;}
+  .sub{color:#8b93b8;letter-spacing:2px;font-size:11px;margin-bottom:12px;text-transform:uppercase;}
+  .tabs{display:flex;gap:8px;margin-bottom:12px;}
+  .tab{cursor:pointer;padding:8px 20px;border-radius:11px;background:#141a30;border:1px solid #26304f;color:#8b93b8;font-weight:700;font-size:12px;letter-spacing:1.5px;}
+  .tab.on{color:#05060a;background:linear-gradient(90deg,#7cf6ff,#9a7bff);border-color:#7cf6ff;}
+  .wrap{width:100%;max-width:780px;max-height:40vh;overflow-y:auto;padding:4px;}
+  .hidden{display:none;}
+  .levels,.maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px;}
+  .lvcard,.mapcard{cursor:pointer;padding:10px 8px;border-radius:12px;background:#141a30;border:1px solid #26304f;transition:.15s;}
+  .lvcard:hover,.mapcard:hover{transform:translateY(-3px);border-color:#6f7dff;}
+  .lvcard.sel,.mapcard.sel{border-color:#7cf6ff;box-shadow:0 0 0 2px #7cf6ff inset,0 6px 20px rgba(124,246,255,.3);}
+  .lvcard.locked{opacity:.42;cursor:not-allowed;}
+  .lvcard .n{font-weight:800;font-size:11.5px;color:#7cf6ff;letter-spacing:1px;}
+  .lvcard .mn{font-weight:700;font-size:12px;margin:3px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .lvcard .ob{font-size:9.5px;color:#8b93b8;}
+  .lvcard .bs{font-size:9.5px;color:#ff9f43;margin-top:2px;}
+  .mapcard .nm{font-weight:700;font-size:12.5px;margin-bottom:3px;}
+  .mapcard .dz{font-size:10px;color:#8b93b8;}
+  .swatch{height:5px;border-radius:3px;margin-bottom:6px;}
+  button{cursor:pointer;border:none;border-radius:12px;padding:13px 32px;font-size:15px;font-weight:700;letter-spacing:1px;color:#05060a;background:linear-gradient(90deg,#7cf6ff,#9a7bff);font-family:inherit;}
+  button:hover{filter:brightness(1.12);}
+  .keys{margin-top:13px;color:#6b7398;font-size:11px;line-height:1.8;letter-spacing:.4px;max-width:660px;}
+  kbd{background:#1b2238;border:1px solid #2c3555;border-radius:5px;padding:2px 6px;color:#b9c2e8;font-size:10px;}
+  #hud{position:fixed;top:0;left:0;right:0;padding:11px 14px;display:none;justify-content:space-between;align-items:flex-start;z-index:5;pointer-events:none;font-weight:700;}
+  .hpwrap{width:min(220px,36vw);}
+  .hplabel{font-size:10px;color:#eef3ff;letter-spacing:2px;margin-bottom:4px;text-shadow:0 1px 4px #000;}
+  .hpbar{height:13px;border-radius:7px;background:#1a2036;overflow:hidden;border:1px solid #2b3557;}
+  .hpfill{height:100%;width:100%;background:linear-gradient(90deg,#ff5c7a,#ff9f43);transition:width .12s;border-radius:7px;}
+  .ammo{margin-top:6px;font-size:10.5px;color:#eef3ff;letter-spacing:1.5px;text-shadow:0 1px 4px #000;}
+  .ammo b{color:#7cf6ff;font-size:15px;}
+  .stat{text-align:right;}
+  .stat .v{font-size:clamp(17px,2.8vw,26px);color:#7cf6ff;text-shadow:0 1px 6px #000;}
+  .stat .l{font-size:9px;color:#cfe0ff;letter-spacing:2px;text-shadow:0 1px 4px #000;}
+  #obj{position:fixed;top:11px;left:50%;transform:translateX(-50%);z-index:5;text-align:center;pointer-events:none;}
+  #obj .t{font-size:11px;letter-spacing:2px;color:#7cf6ff;font-weight:800;text-shadow:0 1px 6px #000;}
+  #obj .s{font-size:10px;letter-spacing:1px;color:#e6eeff;margin-top:2px;text-shadow:0 1px 4px #000;}
+  #wslots{position:fixed;bottom:0;left:50%;transform:translateX(-50%);display:none;gap:6px;z-index:5;padding:9px;pointer-events:none;}
+  .wslot{padding:6px 10px;border-radius:9px;background:rgba(12,16,30,.7);border:1px solid #26304f;font-size:10.5px;font-weight:700;color:#9aa6c8;letter-spacing:1px;white-space:nowrap;}
+  .wslot.on{color:#05060a;background:linear-gradient(90deg,#7cf6ff,#9a7bff);border-color:#7cf6ff;box-shadow:0 0 14px rgba(124,246,255,.45);}
+  .wslot small{display:block;font-size:8px;opacity:.72;letter-spacing:0;}
+  #wave{position:fixed;top:34%;left:50%;transform:translate(-50%,-50%);font-size:clamp(24px,5.2vw,46px);font-weight:800;letter-spacing:8px;color:#fff;text-shadow:0 0 30px #7cf6ff,0 2px 10px #000;opacity:0;z-index:6;pointer-events:none;text-align:center;}
+  #center{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;background:rgba(5,6,10,.76);pointer-events:auto;}
+  #center.hidden{display:none;}
+  #center h2{font-size:clamp(24px,5.2vw,46px);letter-spacing:5px;margin-bottom:8px;text-align:center;padding:0 14px;}
+  #center p{color:#a9b2d8;margin-bottom:20px;font-size:14.5px;text-align:center;padding:0 18px;}
+  #cBtn{position:relative;z-index:21;pointer-events:auto;touch-action:manipulation;}
+  #bossbar{display:none;position:fixed;top:58px;left:50%;transform:translateX(-50%);width:min(560px,88vw);z-index:6;pointer-events:none;}
+  #bossbar .bl{font-size:10px;letter-spacing:2px;color:#ffe08a;text-align:center;margin-bottom:4px;text-shadow:0 1px 5px #000;}
+  #bossbar .bt{height:15px;border-radius:8px;background:#241c2e;border:1px solid #4a3a55;overflow:hidden;}
+  #bossfill{height:100%;width:100%;background:linear-gradient(90deg,#ff5c7a,#ffb02e);transition:width .12s;}
+  #crosshair{display:none;position:fixed;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;z-index:4;pointer-events:none;}
+  #crosshair:before,#crosshair:after{content:'';position:absolute;background:rgba(255,255,255,.85);box-shadow:0 0 4px #000;}
+  #crosshair:before{left:10px;top:0;width:2px;height:22px;}
+  #crosshair:after{top:10px;left:0;height:2px;width:22px;}
+  #touch{position:fixed;inset:0;z-index:3;display:none;pointer-events:none;touch-action:none;}
+  #stick{display:none;position:absolute;width:110px;height:110px;border-radius:50%;background:rgba(124,246,255,.08);border:2px solid rgba(124,246,255,.28);}
+  #knob{position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(124,246,255,.4);left:50%;top:50%;transform:translate(-50%,-50%);}
+  #fireBtn{position:absolute;bottom:34px;right:28px;width:96px;height:96px;border-radius:50%;background:rgba(255,92,122,.28);border:2px solid rgba(255,120,150,.6);color:#ffe3ea;font-weight:800;font-size:12px;letter-spacing:2px;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
+  #swapBtn{position:absolute;bottom:150px;right:52px;width:64px;height:64px;border-radius:50%;background:rgba(124,246,255,.18);border:2px solid rgba(124,246,255,.45);color:#7cf6ff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud">
+  <div class="hpwrap">
+    <div class="hplabel">ARMOR</div>
+    <div class="hpbar"><div class="hpfill" id="hpfill"></div></div>
+    <div class="ammo" id="ammo">PISTOL · <b>30</b> / 30</div>
+  </div>
+  <div class="stat"><div class="v" id="score">0</div><div class="l">SCORE</div></div>
+  <div class="stat"><div class="v" id="waveHud">1</div><div class="l">WAVE</div></div>
+</div>
+<div id="obj"><div class="t" id="objT">LEVEL 1</div><div class="s" id="objS">—</div></div>
+<div id="bossbar"><div class="bl" id="bosstext">BOSS</div><div class="bt"><div id="bossfill"></div></div></div>
+<div id="wslots"></div>
+<div id="crosshair"></div>
+<div id="wave"></div>
+<div id="center" class="hidden"><h2 id="cTitle"></h2><p id="cSub"></p><button id="cBtn"></button></div>
+<div id="menu" class="overlay">
+  <h1>NEON STRIKE 3D</h1>
+  <div class="sub">Block World · Boss Missions · 10 Maps</div>
+  <div class="tabs">
+    <div class="tab on" id="tabCamp">CAMPAIGN</div>
+    <div class="tab" id="tabFree">FREE PLAY</div>
+  </div>
+  <div class="wrap" id="campWrap"><div class="levels" id="levels"></div></div>
+  <div class="wrap hidden" id="freeWrap"><div class="maps" id="maps"></div></div>
+  <button id="start">▶ START MISSION</button>
+  <div class="keys">
+    <kbd>W A S D</kbd> move &nbsp; <kbd>MOUSE</kbd> aim &nbsp; <kbd>CLICK/HOLD</kbd> shoot &nbsp; <kbd>R</kbd> reload &nbsp; <kbd>SHIFT</kbd> dash &nbsp; <kbd>ESC</kbd> pause<br>
+    <kbd>1-5</kbd> / <kbd>Q</kbd> weapon &nbsp;·&nbsp; Mobile: left = move · right drag = look · FIRE + SWAP buttons
+  </div>
+</div>
+<div id="touch">
+  <div id="stick"><div id="knob"></div></div>
+  <div id="fireBtn">FIRE</div>
+  <div id="swapBtn">SWAP</div>
+</div>
+<script>__THREE_JS__</script>
+<script>__GAME_JS__</script>
+</body>
+</html>

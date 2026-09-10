@@ -53,9 +53,11 @@
   .wslot.on{color:#05060a;background:linear-gradient(90deg,#7cf6ff,#9a7bff);border-color:#7cf6ff;box-shadow:0 0 14px rgba(124,246,255,.45);}
   .wslot small{display:block;font-size:8px;opacity:.72;letter-spacing:0;}
   #wave{position:fixed;top:34%;left:50%;transform:translate(-50%,-50%);font-size:clamp(24px,5.2vw,46px);font-weight:800;letter-spacing:8px;color:#fff;text-shadow:0 0 30px #7cf6ff,0 2px 10px #000;opacity:0;z-index:6;pointer-events:none;text-align:center;}
-  #center{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:8;background:rgba(5,6,10,.76);}
+  #center{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;background:rgba(5,6,10,.76);pointer-events:auto;}
+  #center.hidden{display:none;}
   #center h2{font-size:clamp(24px,5.2vw,46px);letter-spacing:5px;margin-bottom:8px;text-align:center;padding:0 14px;}
   #center p{color:#a9b2d8;margin-bottom:20px;font-size:14.5px;text-align:center;padding:0 18px;}
+  #cBtn{position:relative;z-index:21;pointer-events:auto;touch-action:manipulation;}
   #bossbar{display:none;position:fixed;top:58px;left:50%;transform:translateX(-50%);width:min(560px,88vw);z-index:6;pointer-events:none;}
   #bossbar .bl{font-size:10px;letter-spacing:2px;color:#ffe08a;text-align:center;margin-bottom:4px;text-shadow:0 1px 5px #000;}
   #bossbar .bt{height:15px;border-radius:8px;background:#241c2e;border:1px solid #4a3a55;overflow:hidden;}
@@ -786,7 +788,9 @@ function centerAction(){
 document.getElementById('tabCamp').onclick=()=>setMode('campaign');
 document.getElementById('tabFree').onclick=()=>setMode('free');
 document.getElementById('start').onclick=startGame;
-document.getElementById('cBtn').onclick=centerAction;
+const centerBtn=document.getElementById('cBtn');
+centerBtn.onclick=e=>{e.preventDefault();e.stopPropagation();centerAction();};
+centerBtn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();centerAction();},{passive:false});
 buildLevels();buildMaps();setMode('campaign');
 initMobile();
 
