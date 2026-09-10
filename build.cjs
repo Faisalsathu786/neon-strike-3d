@@ -1,0 +1,13 @@
+const fs=require('fs');
+const path=require('path');
+const d='/home/node/.openclaw/workspace/projects/shooter3d/';
+const three=fs.readFileSync('/home/node/.openclaw/workspace/.openclaw/tmp/three.min.js','utf8');
+const parts=['p1.js','p2.js','p3.js','p4.js'].map(f=>fs.readFileSync(d+f,'utf8'));
+const game=parts.join('\n');
+fs.writeFileSync(d+'game.bundle.js',game);
+const shell=fs.readFileSync(d+'shell.html','utf8');
+const html=shell.replace('__THREE_JS__',()=>three).replace('__GAME_JS__',()=>game);
+fs.writeFileSync(d+'index.html',html);
+console.log('game js bytes:',game.length);
+console.log('index.html bytes:',html.length);
+console.log('markers left:', html.indexOf('__THREE_JS__')>=0||html.indexOf('__GAME_JS__')>=0);

@@ -8,11 +8,13 @@ function announce(txt,sub){
  requestAnimationFrame(()=>{el.style.transition='opacity 1.7s';el.style.opacity='0';});
 }
 function showCenter(title,sub,btn){
- const c=document.getElementById('center');c.classList.remove('hidden');
+ const c=document.getElementById('center');c.classList.remove('hidden');c.style.display='flex';
  document.getElementById('cTitle').textContent=title;
  document.getElementById('cSub').textContent=sub;
  document.getElementById('cBtn').textContent=btn;
+ if(document.exitPointerLock)document.exitPointerLock();
 }
+function hideCenter(){const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';}
 function updateHud(){
  const w=WEAPONS[player.wi];
  document.getElementById('score').textContent=score;
@@ -56,7 +58,7 @@ function setMode(m){mode=m;
  document.getElementById('freeWrap').classList.toggle('hidden',m!=='free');}
 function backToMenu(){
  state='menu';
- document.getElementById('center').classList.add('hidden');
+ const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';
  document.getElementById('menu').classList.remove('hidden');
  document.getElementById('hud').style.display='none';
  document.getElementById('wslots').style.display='none';
@@ -80,6 +82,7 @@ function startGame(){
  boss=null;bossSpawned=false;
  score=0;wave=0;camYaw=0;camPitch=0.34;
  document.getElementById('menu').classList.add('hidden');
+ const cc=document.getElementById('center');cc.classList.add('hidden');cc.style.display='none';
  document.getElementById('hud').style.display='flex';
  document.getElementById('wslots').style.display='flex';
  document.getElementById('crosshair').style.display='block';
@@ -96,10 +99,10 @@ function levelClear(){
  if(document.exitPointerLock)document.exitPointerLock();
 }
 function pauseGame(){if(state!=='play')return;state='pause';showCenter('PAUSED','Score '+score+' · wave '+wave,'▶ RESUME');if(document.exitPointerLock)document.exitPointerLock();}
-function resumeGame(){document.getElementById('center').classList.add('hidden');state='play';last=performance.now();
+function resumeGame(){const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';state='play';last=performance.now();
  if(!('ontouchstart' in window)&&cv.requestPointerLock)cv.requestPointerLock();}
 function centerAction(){
- document.getElementById('center').classList.add('hidden');
+ const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';
  if(state==='dead')startGame();
  else if(state==='clear'){startWave();state='play';last=performance.now();if(!('ontouchstart' in window)&&cv.requestPointerLock)cv.requestPointerLock();}
  else if(state==='levelclear'){if(mode==='campaign'&&level+1<LEVELS.length&&level+1<unlocked){level++;startGame();}else backToMenu();}
@@ -117,9 +120,15 @@ initMobile();
 
 let last=performance.now();
 function loop(now){
- let dt=(now-last)/1000;last=now;if(dt>0.05)dt=0.05;
- update(dt);updateCamera(dt);
- renderer.render(scene,camera);
  requestAnimationFrame(loop);
+ let dt=(now-last)/1000;last=now;if(dt>0.05)dt=0.05;
+ try{
+  update(dt);updateCamera(dt);
+  renderer.render(scene,camera);
+ }catch(err){ if(!window.__loopErr){window.__loopErr=1;console.error('loop error',err);} }
 }
+cv.addEventListener('webglcontextlost',e=>{e.preventDefault();showingLost=1;announce('GRAPHICS RESET','Reload if screen stays blank');});
+cv.addEventListener('webglcontextrestored',()=>{showingLost=0;});
+let showingLost=0;
+document.addEventListener('pointerlockerror',()=>{announce('CLICK TO AIM','Tap/click the screen');});
 requestAnimationFrame(loop);

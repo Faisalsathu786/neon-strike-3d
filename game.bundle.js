@@ -393,6 +393,19 @@ function spawnBoss(key){
   contact:c.contact,fire:c.fire,atks:c.atks,fireCd:2,atkCd:2,phase:1,flash:0,dead:false,state:'idle',t:0,ang:0,dashA:0,
   monsterColor:c.color};
 }
+function startWave(){
+ wave++;bossSpawned=false;spawnQueue.length=0;
+ const n=(mode==='campaign')?(4+level+wave*2):(3+Math.floor(wave*1.6));
+ for(let i=0;i<n;i++){
+  const r=Math.random();let type='grunt';
+  if(wave>=2&&r<0.28)type='runner';
+  else if(wave>=3&&r>0.82)type='tank';
+  else if(wave>=4&&r>0.68&&r<0.78)type='sniper';
+  spawnQueue.push(type);
+ }
+ announce('WAVE '+wave,(mode==='campaign'?LEVELS[level].name:'SURVIVAL'));
+ updateHud();
+}
 function killEnemy(e){e.dead=true;score+=e.score;burst(e.x,e.cy,e.z,e.monsterColor,18,7);
  scene.remove(e.mesh);dispose(e.mesh);
  const r=Math.random();if(r<0.14)addPickup(e.x,e.z,'hp');else if(r<0.27)addPickup(e.x,e.z,'ammo');}
@@ -567,11 +580,13 @@ function announce(txt,sub){
  requestAnimationFrame(()=>{el.style.transition='opacity 1.7s';el.style.opacity='0';});
 }
 function showCenter(title,sub,btn){
- const c=document.getElementById('center');c.classList.remove('hidden');
+ const c=document.getElementById('center');c.classList.remove('hidden');c.style.display='flex';
  document.getElementById('cTitle').textContent=title;
  document.getElementById('cSub').textContent=sub;
  document.getElementById('cBtn').textContent=btn;
+ if(document.exitPointerLock)document.exitPointerLock();
 }
+function hideCenter(){const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';}
 function updateHud(){
  const w=WEAPONS[player.wi];
  document.getElementById('score').textContent=score;
@@ -615,7 +630,7 @@ function setMode(m){mode=m;
  document.getElementById('freeWrap').classList.toggle('hidden',m!=='free');}
 function backToMenu(){
  state='menu';
- document.getElementById('center').classList.add('hidden');
+ const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';
  document.getElementById('menu').classList.remove('hidden');
  document.getElementById('hud').style.display='none';
  document.getElementById('wslots').style.display='none';
@@ -639,6 +654,7 @@ function startGame(){
  boss=null;bossSpawned=false;
  score=0;wave=0;camYaw=0;camPitch=0.34;
  document.getElementById('menu').classList.add('hidden');
+ const cc=document.getElementById('center');cc.classList.add('hidden');cc.style.display='none';
  document.getElementById('hud').style.display='flex';
  document.getElementById('wslots').style.display='flex';
  document.getElementById('crosshair').style.display='block';
@@ -655,10 +671,10 @@ function levelClear(){
  if(document.exitPointerLock)document.exitPointerLock();
 }
 function pauseGame(){if(state!=='play')return;state='pause';showCenter('PAUSED','Score '+score+' · wave '+wave,'▶ RESUME');if(document.exitPointerLock)document.exitPointerLock();}
-function resumeGame(){document.getElementById('center').classList.add('hidden');state='play';last=performance.now();
+function resumeGame(){const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';state='play';last=performance.now();
  if(!('ontouchstart' in window)&&cv.requestPointerLock)cv.requestPointerLock();}
 function centerAction(){
- document.getElementById('center').classList.add('hidden');
+ const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';
  if(state==='dead')startGame();
  else if(state==='clear'){startWave();state='play';last=performance.now();if(!('ontouchstart' in window)&&cv.requestPointerLock)cv.requestPointerLock();}
  else if(state==='levelclear'){if(mode==='campaign'&&level+1<LEVELS.length&&level+1<unlocked){level++;startGame();}else backToMenu();}
@@ -676,9 +692,15 @@ initMobile();
 
 let last=performance.now();
 function loop(now){
- let dt=(now-last)/1000;last=now;if(dt>0.05)dt=0.05;
- update(dt);updateCamera(dt);
- renderer.render(scene,camera);
  requestAnimationFrame(loop);
+ let dt=(now-last)/1000;last=now;if(dt>0.05)dt=0.05;
+ try{
+  update(dt);updateCamera(dt);
+  renderer.render(scene,camera);
+ }catch(err){ if(!window.__loopErr){window.__loopErr=1;console.error('loop error',err);} }
 }
+cv.addEventListener('webglcontextlost',e=>{e.preventDefault();showingLost=1;announce('GRAPHICS RESET','Reload if screen stays blank');});
+cv.addEventListener('webglcontextrestored',()=>{showingLost=0;});
+let showingLost=0;
+document.addEventListener('pointerlockerror',()=>{announce('CLICK TO AIM','Tap/click the screen');});
 requestAnimationFrame(loop);
