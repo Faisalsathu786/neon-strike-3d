@@ -6,11 +6,11 @@ sun.shadow.camera.left=-SHAD;sun.shadow.camera.right=SHAD;sun.shadow.camera.top=
 sun.shadow.camera.updateProjectionMatrix();
 
 const WEAPONS=[
- {name:'PISTOL', mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#d6b36a',sfx:'pistol'},
- {name:'SMG',    mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#687b82',sfx:'smg'},
- {name:'SHOTGUN',mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#9b6d43',sfx:'shotgun'},
- {name:'SNIPER', mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#526b64',pierce:3,sfx:'sniper'},
- {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#575d60',rocket:true,sfx:'rocket'}
+ {name:'PISTOL', price:0, mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#d6b36a',sfx:'pistol'},
+ {name:'SMG', price:120, mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#687b82',sfx:'smg'},
+ {name:'SHOTGUN', price:260, mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#9b6d43',sfx:'shotgun'},
+ {name:'SNIPER', price:450, mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#526b64',pierce:3,sfx:'sniper'},
+ {name:'ROCKET', price:700, mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#575d60',rocket:true,sfx:'rocket'}
 ];
 const ETYPE={
  grunt :{hp:42, speed:3.4,scale:1.00,color:'#c94f57',dmg:9, fire:1.6,range:30,score:60},
@@ -38,6 +38,8 @@ const LEVELS=[
 ];
 
 let state='menu',mode='campaign',level=0,unlocked=1,wave=1,score=0,selMap=0,bossSpawned=false;
+let xp=0,selectedLoadout=0,ownedWeapons=[true,false,false,false,false],inVehicle=false;
+try{xp=Math.max(0,parseInt(localStorage.getItem('neon3d_xp')||'0'));const ow=JSON.parse(localStorage.getItem('neon3d_weapons')||'[]');ow.forEach(i=>{if(Number.isInteger(i))ownedWeapons[i]=true;});}catch(e){}
 try{unlocked=Math.max(1,Math.min(LEVELS.length,parseInt(localStorage.getItem('neon3d_unlocked')||'1')));}catch(e){}
 let enemies=[],bullets=[],pickups=[],parts=[],boss=null;
 let spawnQueue=[],spawnTimer=0,shake=0,camYaw=0,camPitch=0.34;
@@ -52,6 +54,7 @@ addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;
  if(k==='r'&&state==='play')startReload();
  if(k==='q'&&state==='play')switchWeapon((player.wi+1)%WEAPONS.length);
  if(k==='shift'&&state==='play')tryDash();
+ if((k==='e'||k==='enter')&&state==='play')toggleVehicle();
  if(k>='1'&&k<='5'&&state==='play')switchWeapon(parseInt(k)-1);});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
 const SENS=0.0026;
@@ -181,10 +184,10 @@ function startWave(){
  announce('WAVE '+wave,(mode==='campaign'?LEVELS[level].name:'SURVIVAL'));
  sfx('wave');updateHud();
 }
-function killEnemy(e){e.dead=true;score+=e.score;sfx('kill');burst(e.x,e.cy,e.z,e.monsterColor,18,7);
+function killEnemy(e){e.dead=true;score+=e.score;xp+=e.score;try{localStorage.setItem('neon3d_xp',String(xp));}catch(err){}sfx('kill');burst(e.x,e.cy,e.z,e.monsterColor,18,7);
  scene.remove(e.mesh);dispose(e.mesh);
  const r=Math.random();if(r<0.14)addPickup(e.x,e.z,'hp');else if(r<0.27)addPickup(e.x,e.z,'ammo');}
-function killBoss(){boss.dead=true;score+=1500;sfx('explode');sfx('clear');
+function killBoss(){boss.dead=true;score+=1500;xp+=1500;try{localStorage.setItem('neon3d_xp',String(xp));}catch(err){}sfx('explode');sfx('clear');
  burst(boss.x,boss.cy,boss.z,boss.monsterColor,60,12);burst(boss.x,boss.cy,boss.z,'#ffe08a',30,9);shake=1.6;
  scene.remove(boss.mesh);dispose(boss.mesh);boss=null;
  if(mode==='campaign')levelClear();}
@@ -194,7 +197,8 @@ function addPickup(x,z,type){
 function startReload(){const w=WEAPONS[player.wi];if(player.reloading||player.mags[player.wi]>=w.mag)return;player.reloading=true;player.reload=w.reload;sfx('reload');}
 function switchWeapon(i){if(i<0||i>=WEAPONS.length||i===player.wi)return;player.wi=i;player.reloading=false;player.reload=0;player.fireCd=0.15;
  if(player.mesh){player.mesh.userData.gun.material.color.set(WEAPONS[i].color);player.mesh.userData.gun.scale.z=i===2?1.35:(i===3?1.85:(i===4?1.55:1.1));}updateHud();}
-function tryDash(){if(player.dashCd>0||state!=='play')return;player.dashCd=1.2;player.dashT=0.16;sfx('dash');
+function toggleVehicle(){if(!vehicle||state!=='play')return;if(!inVehicle&&Math.hypot(player.x-vehicle.x,player.z-vehicle.z)<4.2){inVehicle=true;sfx('vehicle');}else if(inVehicle){inVehicle=false;player.mesh.visible=true;document.getElementById('driveHud').style.display='none';player.x=vehicle.x+2.2;player.z=vehicle.z;}}
+function tryDash(){if(player.dashCd>0||state!=='play'||inVehicle)return;player.dashCd=1.2;player.dashT=0.16;sfx('dash');
  player.dx=Math.sin(player.ang);player.dz=Math.cos(player.ang);}
 function playerHit(d){if(state!=='play')return;player.hp-=d;player.hitFlash=1;shake=Math.min(shake+0.5,1);sfx('hurt');
  burst(player.x,1.6,player.z,'#ff5c7a',8,5);updateHud();

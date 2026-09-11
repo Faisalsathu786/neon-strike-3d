@@ -15,6 +15,15 @@ function showCenter(title,sub,btn){
  if(document.exitPointerLock)document.exitPointerLock();
 }
 function hideCenter(){const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';}
+function buildArmory(){
+ const el=document.getElementById('ars');if(!el)return;el.innerHTML='';
+ document.getElementById('xpVal').textContent=xp;
+ WEAPONS.forEach((w,i)=>{const d=document.createElement('div');const owned=ownedWeapons[i];
+  d.className='ar'+(i===selectedLoadout?' on ':' ')+(owned?'':'locked');
+  d.innerHTML='<strong>'+w.name+'</strong><b>'+ (owned?'OWNED':w.price+' XP') +'</b>';
+  d.onclick=()=>{if(owned){selectedLoadout=i;buildArmory();}else if(xp>=w.price){xp-=w.price;ownedWeapons[i]=true;selectedLoadout=i;try{localStorage.setItem('neon3d_xp',String(xp));localStorage.setItem('neon3d_weapons',JSON.stringify(ownedWeapons.map((v,j)=>v?j:null).filter(v=>v!==null)));}catch(e){}buildArmory();}else announce('NOT ENOUGH XP','Earn XP by completing waves');};
+  el.appendChild(d);});
+}
 function updateHud(){
  const w=WEAPONS[player.wi];
  document.getElementById('score').textContent=score;
@@ -73,7 +82,7 @@ function startGame(){
  player.mesh=buildHero();player.mesh.userData.gun.material.color.set(WEAPONS[0].color);
  scene.add(player.mesh);
  player.x=MAP.spawn.x;player.z=MAP.spawn.z;player.hp=player.maxHp;player.ang=0;
- player.wi=0;player.mags=WEAPONS.map(w=>w.mag);player.reloading=false;player.reload=0;player.fireCd=0;
+ player.wi=selectedLoadout;player.mags=WEAPONS.map(w=>w.mag);player.reloading=false;player.reload=0;player.fireCd=0;inVehicle=false;
  player.dashCd=0;player.dashT=0;player.hitFlash=0;player.walk=0;
  enemies.forEach(e=>scene.remove(e.mesh));enemies=[];
  bullets.forEach(b=>scene.remove(b.m));bullets=[];
@@ -110,10 +119,11 @@ function centerAction(){
 document.getElementById('tabCamp').onclick=()=>setMode('campaign');
 document.getElementById('tabFree').onclick=()=>setMode('free');
 document.getElementById('start').onclick=startGame;
+const enterCarBtn=document.getElementById('enterCar');if(enterCarBtn)enterCarBtn.onclick=e=>{e.preventDefault();toggleVehicle();};
 const centerBtn=document.getElementById('cBtn');
 centerBtn.onclick=e=>{e.preventDefault();e.stopPropagation();centerAction();};
 centerBtn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();centerAction();},{passive:false});
-buildLevels();buildMaps();setMode('campaign');
+buildLevels();buildMaps();buildArmory();setMode('campaign');
 initMobile();
 
 let last=performance.now();

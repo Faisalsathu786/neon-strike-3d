@@ -157,7 +157,7 @@ function dispose(group){group.traverse(o=>{if(o.isMesh){o.geometry.dispose();if(
 function mkRng(seed){let s=seed>>>0;return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
 function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 
-let colliders=[],MAP=MAPS[0];
+let colliders=[],MAP=MAPS[0],vehicle=null;
 
 function buildWorld(m){
  if(world)dispose(world);
@@ -197,6 +197,12 @@ function buildWorld(m){
    if(colliders.some(c=>Math.abs(x-c.cx)<c.w/2+2&&Math.abs(z-c.cz)<c.d/2+2))continue;
    deco(m,x,z,rng);
  }
+ /* drivable jeep parked near the spawn */
+ const cg=new T.Group();
+ const body=new T.Mesh(new T.BoxGeometry(3.2,0.8,5.0),mat('#26343b'));body.position.y=0.8;body.castShadow=true;cg.add(body);
+ const cabin=new T.Mesh(new T.BoxGeometry(2.5,1.0,2.2),mat('#57727a'));cabin.position.set(0,1.55,0.25);cabin.castShadow=true;cg.add(cabin);
+ for(const x of [-1.35,1.35])for(const z of [-1.55,1.55]){const wh=new T.Mesh(new T.CylinderGeometry(0.42,0.42,0.3,12),mat('#15191c'));wh.rotation.z=Math.PI/2;wh.position.set(x,0.48,z);cg.add(wh);}
+ cg.position.set(MAP.spawn.x+6,0,MAP.spawn.z-5);world.add(cg);vehicle={mesh:cg,x:cg.position.x,z:cg.position.z,ang:0,near:false};
  sun.position.set(60,140,50);sun.target.position.set(0,0,0);
 }
 function deco(m,x,z,rng){

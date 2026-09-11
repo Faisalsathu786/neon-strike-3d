@@ -34,6 +34,20 @@ function moveBullets(dt){
   if(dead){scene.remove(b.m);b.m.geometry.dispose();bullets.splice(i,1);}
  }
 }
+function updateVehicle(dt,mx,mz){
+ if(!vehicle)return false;
+ const near=Math.hypot(player.x-vehicle.x,player.z-vehicle.z)<4.2;
+ const prompt=document.getElementById('vehiclePrompt'),drive=document.getElementById('driveHud');
+ if(!inVehicle){if(prompt)prompt.style.display=near?'block':'none';return false;}
+ if(prompt)prompt.style.display='none';if(drive)drive.style.display='block';
+ const steer=(keys['a']||keys['arrowleft']?-1:0)+(keys['d']||keys['arrowright']?1:0);
+ const throttle=(keys['w']||keys['arrowup']?1:0)+(keys['s']||keys['arrowdown']?-1:0);
+ vehicle.ang-=steer*dt*1.8;const speed=throttle*12;
+ const vx=Math.sin(vehicle.ang)*speed*dt,vz=Math.cos(vehicle.ang)*speed*dt;
+ if(!hitWalls(vehicle.x+vx,vehicle.z+vz,1.5)){vehicle.x+=vx;vehicle.z+=vz;}
+ vehicle.mesh.position.set(vehicle.x,0,vehicle.z);vehicle.mesh.rotation.y=vehicle.ang;
+ player.x=vehicle.x;player.z=vehicle.z;player.mesh.visible=false;return true;
+}
 function update(dt){
  for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.life-=dt/p.max;
   p.m.position.x+=p.vx*dt;p.m.position.y+=p.vy*dt;p.m.position.z+=p.vz*dt;p.vy-=9*dt;
@@ -49,6 +63,13 @@ function update(dt){
  shake*=Math.max(0,1-dt*6);player.hitFlash=Math.max(0,player.hitFlash-dt*4);
  player.contactCd=Math.max(0,player.contactCd-dt);
  if(state!=='play')return;
+
+ /* vehicle mode: vehicle handles movement and disables on-foot movement */
+ if(updateVehicle(dt,0,0)){
+  player.fireCd=0;moveBullets(dt);
+  for(const e of enemies){if(e.dead)continue;const dx=player.x-e.x,dz=player.z-e.z,d=Math.hypot(dx,dz)||1;e.fireCd-=dt;if(d>e.range*0.62||!los(e.x,e.z,player.x,player.z))moveXZ(e,dx/d*e.speed*dt,dz/d*e.speed*dt);if(d<e.r+2&&player.contactCd<=0){playerHit(e.dmg);player.contactCd=.7;}}
+  return;
+ }
 
  /* player move */
  const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),rx=-fz,rz=fx;
@@ -76,7 +97,7 @@ function update(dt){
 
  /* shooting */
  player.fireCd-=dt;
- if((mouseDown||TOUCH.fire||BTN.fire||AUTO)&&player.fireCd<=0&&!player.reloading)shoot();
+ if((mouseDown||TOUCH.fire||BTN.fire||AUTO)&&player.fireCd<=0&&!player.reloading&&!inVehicle)shoot();
  if(player.reloading){player.reload-=dt;if(player.reload<=0){player.mags[player.wi]=WEAPONS[player.wi].mag;player.reloading=false;updateHud();}}
 
  moveBullets(dt);

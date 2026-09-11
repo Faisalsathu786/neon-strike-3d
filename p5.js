@@ -62,6 +62,7 @@ function sfx(name){
   case 'pickup': sfxTone(880,0.08,'sine',0.16,1320);break;
   case 'hurt': sfxTone(210,0.2,'sawtooth',0.22,90);break;
   case 'armor': sfxNoise(0.09,0.13,1700,1);sfxTone(180,0.08,'square',0.06,90);break;
+  case 'vehicle': sfxNoise(0.22,0.18,900,0.8);sfxTone(110,0.18,'sawtooth',0.12,70);break;
   case 'dash': sfxNoise(0.18,0.17,2000,1);break;
   case 'wave': sfxTone(520,0.12,'triangle',0.16,780);sfxTone(780,0.18,'triangle',0.16,1040,0.13);break;
   case 'boss': sfxTone(110,0.5,'sawtooth',0.22,60);sfxTone(88,0.7,'sawtooth',0.22,45,0.26);break;

@@ -34,6 +34,16 @@
   button{cursor:pointer;border:none;border-radius:12px;padding:13px 32px;font-size:15px;font-weight:700;letter-spacing:1px;color:#05060a;background:linear-gradient(90deg,#7cf6ff,#9a7bff);font-family:inherit;}
   button:hover{filter:brightness(1.12);}
   .keys{margin-top:13px;color:#6b7398;font-size:11px;line-height:1.8;letter-spacing:.4px;max-width:660px;}
+  #armory{width:100%;max-width:780px;margin:10px 0 12px;}
+  #armory h3{font-size:12px;letter-spacing:2px;color:#7cf6ff;margin-bottom:7px;}
+  .ars{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;}
+  .ar{padding:8px 5px;border:1px solid #2b3656;border-radius:10px;background:#10172b;color:#dfe6ff;font-size:10px;cursor:pointer;}
+  .ar.on{border-color:#7cf6ff;box-shadow:0 0 0 1px #7cf6ff inset;background:#1e2a42;}
+  .ar.locked{opacity:.45;}
+  .ar b{display:block;font-size:10px;color:#ffe08a;margin-top:3px;}
+  #vehiclePrompt{display:none;position:fixed;bottom:145px;left:50%;transform:translateX(-50%);z-index:7;background:rgba(8,13,23,.88);border:1px solid #78c66a;color:#dff7d8;border-radius:12px;padding:10px 16px;font-size:12px;letter-spacing:1px;pointer-events:auto;}
+  #vehiclePrompt button{padding:8px 14px;margin-left:8px;font-size:11px;}
+  #driveHud{display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:7;color:#ffe08a;background:rgba(8,13,23,.8);padding:7px 12px;border-radius:8px;font-size:11px;letter-spacing:1px;pointer-events:none;}
   kbd{background:#1b2238;border:1px solid #2c3555;border-radius:5px;padding:2px 6px;color:#b9c2e8;font-size:10px;}
   #hud{position:fixed;top:0;left:0;right:0;padding:11px 14px;display:none;justify-content:space-between;align-items:flex-start;z-index:5;pointer-events:none;font-weight:700;}
   .hpwrap{width:min(220px,36vw);}
@@ -118,12 +128,15 @@
   </div>
   <div class="wrap" id="campWrap"><div class="levels" id="levels"></div></div>
   <div class="wrap hidden" id="freeWrap"><div class="maps" id="maps"></div></div>
+  <div id="armory"><h3>LOADOUT · XP <span id="xpVal">0</span></h3><div class="ars" id="ars"></div></div>
   <button id="start">▶ START MISSION</button>
   <div class="keys">
     <kbd>W A S D</kbd> move &nbsp; <kbd>MOUSE</kbd> aim &nbsp; <kbd>CLICK/HOLD</kbd> fire &nbsp; <kbd>R</kbd> reload &nbsp; <kbd>SHIFT</kbd> dash &nbsp; <kbd>ESC</kbd> pause<br>
     <kbd>1-5</kbd> / <kbd>Q</kbd> weapon &nbsp;·&nbsp; PC: on-screen movement + FIRE controls &nbsp;·&nbsp; Mobile: left stick = move · right side = look · FIRE / SWAP / AUTO
   </div>
 </div>
+<div id="vehiclePrompt">VEHICLE READY <button id="enterCar">ENTER VEHICLE</button></div>
+<div id="driveHud">WASD / ARROWS · DRIVE &nbsp; E: EXIT VEHICLE</div>
 <div id="touch">
   <div id="stick"><div id="knob"></div></div>
   <div id="fireBtn">FIRE</div>

@@ -157,7 +157,7 @@ function dispose(group){group.traverse(o=>{if(o.isMesh){o.geometry.dispose();if(
 function mkRng(seed){let s=seed>>>0;return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
 function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 
-let colliders=[],MAP=MAPS[0];
+let colliders=[],MAP=MAPS[0],vehicle=null;
 
 function buildWorld(m){
  if(world)dispose(world);
@@ -197,6 +197,12 @@ function buildWorld(m){
    if(colliders.some(c=>Math.abs(x-c.cx)<c.w/2+2&&Math.abs(z-c.cz)<c.d/2+2))continue;
    deco(m,x,z,rng);
  }
+ /* drivable jeep parked near the spawn */
+ const cg=new T.Group();
+ const body=new T.Mesh(new T.BoxGeometry(3.2,0.8,5.0),mat('#26343b'));body.position.y=0.8;body.castShadow=true;cg.add(body);
+ const cabin=new T.Mesh(new T.BoxGeometry(2.5,1.0,2.2),mat('#57727a'));cabin.position.set(0,1.55,0.25);cabin.castShadow=true;cg.add(cabin);
+ for(const x of [-1.35,1.35])for(const z of [-1.55,1.55]){const wh=new T.Mesh(new T.CylinderGeometry(0.42,0.42,0.3,12),mat('#15191c'));wh.rotation.z=Math.PI/2;wh.position.set(x,0.48,z);cg.add(wh);}
+ cg.position.set(MAP.spawn.x+6,0,MAP.spawn.z-5);world.add(cg);vehicle={mesh:cg,x:cg.position.x,z:cg.position.z,ang:0,near:false};
  sun.position.set(60,140,50);sun.target.position.set(0,0,0);
 }
 function deco(m,x,z,rng){
@@ -277,11 +283,11 @@ sun.shadow.camera.left=-SHAD;sun.shadow.camera.right=SHAD;sun.shadow.camera.top=
 sun.shadow.camera.updateProjectionMatrix();
 
 const WEAPONS=[
- {name:'PISTOL', mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#d6b36a',sfx:'pistol'},
- {name:'SMG',    mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#687b82',sfx:'smg'},
- {name:'SHOTGUN',mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#9b6d43',sfx:'shotgun'},
- {name:'SNIPER', mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#526b64',pierce:3,sfx:'sniper'},
- {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#575d60',rocket:true,sfx:'rocket'}
+ {name:'PISTOL', price:0, mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#d6b36a',sfx:'pistol'},
+ {name:'SMG', price:120, mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#687b82',sfx:'smg'},
+ {name:'SHOTGUN', price:260, mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#9b6d43',sfx:'shotgun'},
+ {name:'SNIPER', price:450, mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#526b64',pierce:3,sfx:'sniper'},
+ {name:'ROCKET', price:700, mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#575d60',rocket:true,sfx:'rocket'}
 ];
 const ETYPE={
  grunt :{hp:42, speed:3.4,scale:1.00,color:'#c94f57',dmg:9, fire:1.6,range:30,score:60},
@@ -309,6 +315,8 @@ const LEVELS=[
 ];
 
 let state='menu',mode='campaign',level=0,unlocked=1,wave=1,score=0,selMap=0,bossSpawned=false;
+let xp=0,selectedLoadout=0,ownedWeapons=[true,false,false,false,false],inVehicle=false;
+try{xp=Math.max(0,parseInt(localStorage.getItem('neon3d_xp')||'0'));const ow=JSON.parse(localStorage.getItem('neon3d_weapons')||'[]');ow.forEach(i=>{if(Number.isInteger(i))ownedWeapons[i]=true;});}catch(e){}
 try{unlocked=Math.max(1,Math.min(LEVELS.length,parseInt(localStorage.getItem('neon3d_unlocked')||'1')));}catch(e){}
 let enemies=[],bullets=[],pickups=[],parts=[],boss=null;
 let spawnQueue=[],spawnTimer=0,shake=0,camYaw=0,camPitch=0.34;
@@ -323,6 +331,7 @@ addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;
  if(k==='r'&&state==='play')startReload();
  if(k==='q'&&state==='play')switchWeapon((player.wi+1)%WEAPONS.length);
  if(k==='shift'&&state==='play')tryDash();
+ if((k==='e'||k==='enter')&&state==='play')toggleVehicle();
  if(k>='1'&&k<='5'&&state==='play')switchWeapon(parseInt(k)-1);});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
 const SENS=0.0026;
@@ -452,10 +461,10 @@ function startWave(){
  announce('WAVE '+wave,(mode==='campaign'?LEVELS[level].name:'SURVIVAL'));
  sfx('wave');updateHud();
 }
-function killEnemy(e){e.dead=true;score+=e.score;sfx('kill');burst(e.x,e.cy,e.z,e.monsterColor,18,7);
+function killEnemy(e){e.dead=true;score+=e.score;xp+=e.score;try{localStorage.setItem('neon3d_xp',String(xp));}catch(err){}sfx('kill');burst(e.x,e.cy,e.z,e.monsterColor,18,7);
  scene.remove(e.mesh);dispose(e.mesh);
  const r=Math.random();if(r<0.14)addPickup(e.x,e.z,'hp');else if(r<0.27)addPickup(e.x,e.z,'ammo');}
-function killBoss(){boss.dead=true;score+=1500;sfx('explode');sfx('clear');
+function killBoss(){boss.dead=true;score+=1500;xp+=1500;try{localStorage.setItem('neon3d_xp',String(xp));}catch(err){}sfx('explode');sfx('clear');
  burst(boss.x,boss.cy,boss.z,boss.monsterColor,60,12);burst(boss.x,boss.cy,boss.z,'#ffe08a',30,9);shake=1.6;
  scene.remove(boss.mesh);dispose(boss.mesh);boss=null;
  if(mode==='campaign')levelClear();}
@@ -465,7 +474,8 @@ function addPickup(x,z,type){
 function startReload(){const w=WEAPONS[player.wi];if(player.reloading||player.mags[player.wi]>=w.mag)return;player.reloading=true;player.reload=w.reload;sfx('reload');}
 function switchWeapon(i){if(i<0||i>=WEAPONS.length||i===player.wi)return;player.wi=i;player.reloading=false;player.reload=0;player.fireCd=0.15;
  if(player.mesh){player.mesh.userData.gun.material.color.set(WEAPONS[i].color);player.mesh.userData.gun.scale.z=i===2?1.35:(i===3?1.85:(i===4?1.55:1.1));}updateHud();}
-function tryDash(){if(player.dashCd>0||state!=='play')return;player.dashCd=1.2;player.dashT=0.16;sfx('dash');
+function toggleVehicle(){if(!vehicle||state!=='play')return;if(!inVehicle&&Math.hypot(player.x-vehicle.x,player.z-vehicle.z)<4.2){inVehicle=true;sfx('vehicle');}else if(inVehicle){inVehicle=false;player.mesh.visible=true;document.getElementById('driveHud').style.display='none';player.x=vehicle.x+2.2;player.z=vehicle.z;}}
+function tryDash(){if(player.dashCd>0||state!=='play'||inVehicle)return;player.dashCd=1.2;player.dashT=0.16;sfx('dash');
  player.dx=Math.sin(player.ang);player.dz=Math.cos(player.ang);}
 function playerHit(d){if(state!=='play')return;player.hp-=d;player.hitFlash=1;shake=Math.min(shake+0.5,1);sfx('hurt');
  burst(player.x,1.6,player.z,'#ff5c7a',8,5);updateHud();
@@ -508,6 +518,20 @@ function moveBullets(dt){
   if(dead){scene.remove(b.m);b.m.geometry.dispose();bullets.splice(i,1);}
  }
 }
+function updateVehicle(dt,mx,mz){
+ if(!vehicle)return false;
+ const near=Math.hypot(player.x-vehicle.x,player.z-vehicle.z)<4.2;
+ const prompt=document.getElementById('vehiclePrompt'),drive=document.getElementById('driveHud');
+ if(!inVehicle){if(prompt)prompt.style.display=near?'block':'none';return false;}
+ if(prompt)prompt.style.display='none';if(drive)drive.style.display='block';
+ const steer=(keys['a']||keys['arrowleft']?-1:0)+(keys['d']||keys['arrowright']?1:0);
+ const throttle=(keys['w']||keys['arrowup']?1:0)+(keys['s']||keys['arrowdown']?-1:0);
+ vehicle.ang-=steer*dt*1.8;const speed=throttle*12;
+ const vx=Math.sin(vehicle.ang)*speed*dt,vz=Math.cos(vehicle.ang)*speed*dt;
+ if(!hitWalls(vehicle.x+vx,vehicle.z+vz,1.5)){vehicle.x+=vx;vehicle.z+=vz;}
+ vehicle.mesh.position.set(vehicle.x,0,vehicle.z);vehicle.mesh.rotation.y=vehicle.ang;
+ player.x=vehicle.x;player.z=vehicle.z;player.mesh.visible=false;return true;
+}
 function update(dt){
  for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.life-=dt/p.max;
   p.m.position.x+=p.vx*dt;p.m.position.y+=p.vy*dt;p.m.position.z+=p.vz*dt;p.vy-=9*dt;
@@ -523,6 +547,13 @@ function update(dt){
  shake*=Math.max(0,1-dt*6);player.hitFlash=Math.max(0,player.hitFlash-dt*4);
  player.contactCd=Math.max(0,player.contactCd-dt);
  if(state!=='play')return;
+
+ /* vehicle mode: vehicle handles movement and disables on-foot movement */
+ if(updateVehicle(dt,0,0)){
+  player.fireCd=0;moveBullets(dt);
+  for(const e of enemies){if(e.dead)continue;const dx=player.x-e.x,dz=player.z-e.z,d=Math.hypot(dx,dz)||1;e.fireCd-=dt;if(d>e.range*0.62||!los(e.x,e.z,player.x,player.z))moveXZ(e,dx/d*e.speed*dt,dz/d*e.speed*dt);if(d<e.r+2&&player.contactCd<=0){playerHit(e.dmg);player.contactCd=.7;}}
+  return;
+ }
 
  /* player move */
  const fx=-Math.sin(camYaw),fz=-Math.cos(camYaw),rx=-fz,rz=fx;
@@ -550,7 +581,7 @@ function update(dt){
 
  /* shooting */
  player.fireCd-=dt;
- if((mouseDown||TOUCH.fire||BTN.fire||AUTO)&&player.fireCd<=0&&!player.reloading)shoot();
+ if((mouseDown||TOUCH.fire||BTN.fire||AUTO)&&player.fireCd<=0&&!player.reloading&&!inVehicle)shoot();
  if(player.reloading){player.reload-=dt;if(player.reload<=0){player.mags[player.wi]=WEAPONS[player.wi].mag;player.reloading=false;updateHud();}}
 
  moveBullets(dt);
@@ -645,6 +676,15 @@ function showCenter(title,sub,btn){
  if(document.exitPointerLock)document.exitPointerLock();
 }
 function hideCenter(){const c=document.getElementById('center');c.classList.add('hidden');c.style.display='none';}
+function buildArmory(){
+ const el=document.getElementById('ars');if(!el)return;el.innerHTML='';
+ document.getElementById('xpVal').textContent=xp;
+ WEAPONS.forEach((w,i)=>{const d=document.createElement('div');const owned=ownedWeapons[i];
+  d.className='ar'+(i===selectedLoadout?' on ':' ')+(owned?'':'locked');
+  d.innerHTML='<strong>'+w.name+'</strong><b>'+ (owned?'OWNED':w.price+' XP') +'</b>';
+  d.onclick=()=>{if(owned){selectedLoadout=i;buildArmory();}else if(xp>=w.price){xp-=w.price;ownedWeapons[i]=true;selectedLoadout=i;try{localStorage.setItem('neon3d_xp',String(xp));localStorage.setItem('neon3d_weapons',JSON.stringify(ownedWeapons.map((v,j)=>v?j:null).filter(v=>v!==null)));}catch(e){}buildArmory();}else announce('NOT ENOUGH XP','Earn XP by completing waves');};
+  el.appendChild(d);});
+}
 function updateHud(){
  const w=WEAPONS[player.wi];
  document.getElementById('score').textContent=score;
@@ -703,7 +743,7 @@ function startGame(){
  player.mesh=buildHero();player.mesh.userData.gun.material.color.set(WEAPONS[0].color);
  scene.add(player.mesh);
  player.x=MAP.spawn.x;player.z=MAP.spawn.z;player.hp=player.maxHp;player.ang=0;
- player.wi=0;player.mags=WEAPONS.map(w=>w.mag);player.reloading=false;player.reload=0;player.fireCd=0;
+ player.wi=selectedLoadout;player.mags=WEAPONS.map(w=>w.mag);player.reloading=false;player.reload=0;player.fireCd=0;inVehicle=false;
  player.dashCd=0;player.dashT=0;player.hitFlash=0;player.walk=0;
  enemies.forEach(e=>scene.remove(e.mesh));enemies=[];
  bullets.forEach(b=>scene.remove(b.m));bullets=[];
@@ -740,10 +780,11 @@ function centerAction(){
 document.getElementById('tabCamp').onclick=()=>setMode('campaign');
 document.getElementById('tabFree').onclick=()=>setMode('free');
 document.getElementById('start').onclick=startGame;
+const enterCarBtn=document.getElementById('enterCar');if(enterCarBtn)enterCarBtn.onclick=e=>{e.preventDefault();toggleVehicle();};
 const centerBtn=document.getElementById('cBtn');
 centerBtn.onclick=e=>{e.preventDefault();e.stopPropagation();centerAction();};
 centerBtn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();centerAction();},{passive:false});
-buildLevels();buildMaps();setMode('campaign');
+buildLevels();buildMaps();buildArmory();setMode('campaign');
 initMobile();
 
 let last=performance.now();
@@ -830,6 +871,7 @@ function sfx(name){
   case 'pickup': sfxTone(880,0.08,'sine',0.16,1320);break;
   case 'hurt': sfxTone(210,0.2,'sawtooth',0.22,90);break;
   case 'armor': sfxNoise(0.09,0.13,1700,1);sfxTone(180,0.08,'square',0.06,90);break;
+  case 'vehicle': sfxNoise(0.22,0.18,900,0.8);sfxTone(110,0.18,'sawtooth',0.12,70);break;
   case 'dash': sfxNoise(0.18,0.17,2000,1);break;
   case 'wave': sfxTone(520,0.12,'triangle',0.16,780);sfxTone(780,0.18,'triangle',0.16,1040,0.13);break;
   case 'boss': sfxTone(110,0.5,'sawtooth',0.22,60);sfxTone(88,0.7,'sawtooth',0.22,45,0.26);break;
