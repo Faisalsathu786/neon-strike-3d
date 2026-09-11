@@ -104,10 +104,15 @@ function buildBoss(type,color){
 const HW=62, HD=46;   /* default half extents */
 function wall(cx,cz,w,d,h,top){return {cx,cz,w,d,h:h||7,top:top};}
 const MAPS=[
- {name:'NEON CITY',diff:'Easy',deco:'city',sky:'#1b2440',fog:'#26325c',ground:'#3a4560',ground2:'#333d55',
-  wall:'#4a5a86',wallTop:'#7cf6ff',accent:'#7cf6ff',
-  spawn:{x:0,z:34},
-  blocks:[wall(-22,-10,14,14,9),wall(22,-10,14,14,9),wall(-22,12,14,14,9),wall(22,12,14,14,9),wall(0,0,10,18,12),wall(-36,20,10,10,7),wall(36,20,10,10,7),wall(-38,-22,10,10,7),wall(38,-22,10,10,7)]},
+ {name:'RIVERSIDE COMPOUND',diff:'Easy',deco:'rural',sky:'#86c7ef',fog:'#b4d7c7',ground:'#3f7f35',ground2:'#518f3d',
+  wall:'#8b7358',wallTop:'#c7a477',accent:'#78c66a',
+  spawn:{x:0,z:38},
+  /* connected rooms and courtyards: thin walls leave doors and sight lines */
+  blocks:[wall(-24,-16,22,2,6),wall(-13,-8,2,16,6),wall(-35,-8,2,16,6),
+   wall(24,-16,22,2,6),wall(13,-8,2,16,6),wall(35,-8,2,16,6),
+   wall(-24,16,22,2,6),wall(-13,24,2,16,6),wall(-35,24,2,16,6),
+   wall(24,16,22,2,6),wall(13,24,2,16,6),wall(35,24,2,16,6),
+   wall(0,-2,12,2,4),wall(0,19,10,2,4)]},
  {name:'JUNGLE RUINS',diff:'Medium',deco:'jungle',sky:'#5aa9e6',fog:'#a8d8b0',ground:'#3f7a35',ground2:'#4a8c3d',
   wall:'#6b6f5a',wallTop:'#9be86a',accent:'#9be86a',
   spawn:{x:0,z:30},
@@ -198,7 +203,11 @@ function deco(m,x,z,rng){
  const g=new T.Group();g.position.set(x,0,z);
  const k=rng();
  function add(mesh){world.add(mesh);}
- if(m.deco==='jungle'){
+ if(m.deco==='rural'){
+   if(k<0.52){const h=3.5+rng()*2;add(cyl(x,z,0.42,h,'#66452d'));treeTop(x,z,h,rng);}
+   else if(k<0.76){add(cubeAt(x,z,2.4,0.35,2.4,'#688d3f'));}
+   else{add(cubeAt(x,z,1.2,0.7,1.2,'#8a6c49'));}
+ } else if(m.deco==='jungle'){
    if(k<0.62){const h=4+rng()*4;add(cyl(x,z,0.5,h,'#6b4a2a'));treeTop(x,z,h,rng);}
    else{add(cubeAt(x,z,2.4,2.2,2.4,'#2f7a2a'));}
  } else if(m.deco==='city'){
@@ -237,9 +246,11 @@ function building(x,z,w,h,c,trim,rng){const g=new T.Group();const b=new T.Mesh(n
  for(let i=1;i<h;i+=2){const win=new T.Mesh(new T.BoxGeometry(w*0.75,0.5,0.06),new T.MeshBasicMaterial({color:new T.Color(trim)}));
   win.position.set(x,i,z-w/2-0.04);g.add(win);const win2=win.clone();win2.position.z=z+w/2+0.04;g.add(win2);}
  world.add(g);return g;}
-function treeTop(x,z,h,rng){const c=new T.Mesh(new T.BoxGeometry(3.4,2.6,3.4),mat('#2f6b26'));c.position.set(x,h,z);c.castShadow=true;world.add(c);
- const c2=new T.Mesh(new T.BoxGeometry(2.4,2.0,2.4),mat('#3f8a33'));c2.position.set(x,h+1.8,z);c2.castShadow=true;world.add(c2);
- const c3=new T.Mesh(new T.BoxGeometry(1.4,1.4,1.4),mat('#4fa63d'));c3.position.set(x,h+3.2,z);c3.castShadow=true;world.add(c3);}
+function treeTop(x,z,h,rng){
+ const c=new T.Mesh(new T.ConeGeometry(2.4,3.2,8),mat('#2f7a2c'));c.position.set(x,h+1.5,z);c.castShadow=true;world.add(c);
+ const c2=new T.Mesh(new T.ConeGeometry(1.8,2.8,8),mat('#3f9638'));c2.position.set(x,h+3.4,z);c2.castShadow=true;world.add(c2);
+ const c3=new T.Mesh(new T.ConeGeometry(1.1,2.2,8),mat('#5cad42'));c3.position.set(x,h+5.0,z);c3.castShadow=true;world.add(c3);
+}
 
 /* collision helpers (XZ) */
 function circleRect(cx,cz,r,R){const nx=clamp(cx,R.cx-R.w/2,R.cx+R.w/2),nz=clamp(cz,R.cz-R.d/2,R.cz+R.d/2);return (cx-nx)**2+(cz-nz)**2<r*r;}
@@ -266,11 +277,11 @@ sun.shadow.camera.left=-SHAD;sun.shadow.camera.right=SHAD;sun.shadow.camera.top=
 sun.shadow.camera.updateProjectionMatrix();
 
 const WEAPONS=[
- {name:'PISTOL', mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#ffe08a',sfx:'pistol'},
- {name:'SMG',    mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#7cf6ff',sfx:'smg'},
- {name:'SHOTGUN',mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#ffb02e',sfx:'shotgun'},
- {name:'SNIPER', mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#5cffb0',pierce:3,sfx:'sniper'},
- {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#ff5c7a',rocket:true,sfx:'rocket'}
+ {name:'PISTOL', mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#d6b36a',sfx:'pistol'},
+ {name:'SMG',    mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#687b82',sfx:'smg'},
+ {name:'SHOTGUN',mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#9b6d43',sfx:'shotgun'},
+ {name:'SNIPER', mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#526b64',pierce:3,sfx:'sniper'},
+ {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#575d60',rocket:true,sfx:'rocket'}
 ];
 const ETYPE={
  grunt :{hp:42, speed:3.4,scale:1.00,color:'#c94f57',dmg:9, fire:1.6,range:30,score:60},
@@ -453,7 +464,7 @@ function addPickup(x,z,type){
  m.position.set(x,1.0,z);scene.add(m);pickups.push({x,z,m,type,life:18});}
 function startReload(){const w=WEAPONS[player.wi];if(player.reloading||player.mags[player.wi]>=w.mag)return;player.reloading=true;player.reload=w.reload;sfx('reload');}
 function switchWeapon(i){if(i<0||i>=WEAPONS.length||i===player.wi)return;player.wi=i;player.reloading=false;player.reload=0;player.fireCd=0.15;
- if(player.mesh)player.mesh.userData.gun.material.color.set(WEAPONS[i].color);updateHud();}
+ if(player.mesh){player.mesh.userData.gun.material.color.set(WEAPONS[i].color);player.mesh.userData.gun.scale.z=i===2?1.35:(i===3?1.85:(i===4?1.55:1.1));}updateHud();}
 function tryDash(){if(player.dashCd>0||state!=='play')return;player.dashCd=1.2;player.dashT=0.16;sfx('dash');
  player.dx=Math.sin(player.ang);player.dz=Math.cos(player.ang);}
 function playerHit(d){if(state!=='play')return;player.hp-=d;player.hitFlash=1;shake=Math.min(shake+0.5,1);sfx('hurt');

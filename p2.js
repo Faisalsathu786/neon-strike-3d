@@ -6,11 +6,11 @@ sun.shadow.camera.left=-SHAD;sun.shadow.camera.right=SHAD;sun.shadow.camera.top=
 sun.shadow.camera.updateProjectionMatrix();
 
 const WEAPONS=[
- {name:'PISTOL', mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#ffe08a',sfx:'pistol'},
- {name:'SMG',    mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#7cf6ff',sfx:'smg'},
- {name:'SHOTGUN',mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#ffb02e',sfx:'shotgun'},
- {name:'SNIPER', mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#5cffb0',pierce:3,sfx:'sniper'},
- {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#ff5c7a',rocket:true,sfx:'rocket'}
+ {name:'PISTOL', mag:30,reload:1.0,fire:0.12,dmg:18,spread:0.012,pellets:1,speed:95, color:'#d6b36a',sfx:'pistol'},
+ {name:'SMG',    mag:45,reload:1.25,fire:0.06,dmg:11,spread:0.038,pellets:1,speed:105,color:'#687b82',sfx:'smg'},
+ {name:'SHOTGUN',mag:8, reload:1.6, fire:0.78,dmg:13,spread:0.09, pellets:9,speed:80, color:'#9b6d43',sfx:'shotgun'},
+ {name:'SNIPER', mag:6, reload:1.9, fire:1.0, dmg:90,spread:0.002,pellets:1,speed:230,color:'#526b64',pierce:3,sfx:'sniper'},
+ {name:'ROCKET', mag:4, reload:2.2, fire:1.3, dmg:55,spread:0.006,pellets:1,speed:62, color:'#575d60',rocket:true,sfx:'rocket'}
 ];
 const ETYPE={
  grunt :{hp:42, speed:3.4,scale:1.00,color:'#c94f57',dmg:9, fire:1.6,range:30,score:60},
@@ -193,7 +193,7 @@ function addPickup(x,z,type){
  m.position.set(x,1.0,z);scene.add(m);pickups.push({x,z,m,type,life:18});}
 function startReload(){const w=WEAPONS[player.wi];if(player.reloading||player.mags[player.wi]>=w.mag)return;player.reloading=true;player.reload=w.reload;sfx('reload');}
 function switchWeapon(i){if(i<0||i>=WEAPONS.length||i===player.wi)return;player.wi=i;player.reloading=false;player.reload=0;player.fireCd=0.15;
- if(player.mesh)player.mesh.userData.gun.material.color.set(WEAPONS[i].color);updateHud();}
+ if(player.mesh){player.mesh.userData.gun.material.color.set(WEAPONS[i].color);player.mesh.userData.gun.scale.z=i===2?1.35:(i===3?1.85:(i===4?1.55:1.1));}updateHud();}
 function tryDash(){if(player.dashCd>0||state!=='play')return;player.dashCd=1.2;player.dashT=0.16;sfx('dash');
  player.dx=Math.sin(player.ang);player.dz=Math.cos(player.ang);}
 function playerHit(d){if(state!=='play')return;player.hp-=d;player.hitFlash=1;shake=Math.min(shake+0.5,1);sfx('hurt');
