@@ -97,8 +97,6 @@ function initMobile(){
  const fb=document.getElementById('fireBtn');
  fb.addEventListener('touchstart',e=>{e.preventDefault();TOUCH.fire=true;},{passive:false});
  fb.addEventListener('touchend',e=>{e.preventDefault();TOUCH.fire=false;},{passive:false});
- const fastBtn=document.getElementById('fastBtn');if(fastBtn)fastBtn.addEventListener('touchend',e=>{e.preventDefault();toggleFastRun();},{passive:false});
- const carBtn=document.getElementById('carBtn');if(carBtn)carBtn.addEventListener('touchend',e=>{e.preventDefault();toggleVehicle();},{passive:false});
  document.getElementById('swapBtn').addEventListener('touchstart',e=>{e.preventDefault();if(state==='play')switchWeapon((player.wi+1)%WEAPONS.length);},{passive:false});
 }
 

@@ -37,9 +37,9 @@ function moveBullets(dt){
 function updateVehicle(dt,mx,mz){
  if(!vehicle)return false;
  const near=Math.hypot(player.x-vehicle.x,player.z-vehicle.z)<4.2;
- const prompt=document.getElementById('vehiclePrompt'),drive=document.getElementById('driveHud');
- if(!inVehicle){if(prompt)prompt.style.display=near?'block':'none';return false;}
- if(prompt)prompt.style.display='none';if(drive)drive.style.display='block';
+ const prompt=document.getElementById('vehiclePrompt'),drive=document.getElementById('driveHud'),carBtn=document.getElementById('carBtn');
+ if(!inVehicle){if(prompt)prompt.style.display=near?'block':'none';if(carBtn)carBtn.style.display=near?'flex':'none';return false;}
+ if(prompt)prompt.style.display='none';if(drive)drive.style.display='block';if(carBtn)carBtn.style.display='flex';
  const steer=(keys['a']||keys['arrowleft']?-1:0)+(keys['d']||keys['arrowright']?1:0);
  const throttle=(keys['w']||keys['arrowup']?1:0)+(keys['s']||keys['arrowdown']?-1:0);
  vehicle.ang-=steer*dt*1.8;const speed=throttle*12;
@@ -83,6 +83,8 @@ function update(dt){
  if(BTN.r){mx+=rx;mz+=rz;}
  if(BTN.l){mx-=rx;mz-=rz;}
  if(TOUCH.move.id!==null){mx+=fx*(-TOUCH.move.dy)+rx*TOUCH.move.dx;mz+=fz*(-TOUCH.move.dy)+rz*TOUCH.move.dx;}
+ /* FAST RUN is an active toggle: tap once and the operator keeps moving forward at sprint speed. */
+ if(FAST_RUN){mx+=fx;mz+=fz;}
  const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml;}
  player.dashCd=Math.max(0,player.dashCd-dt);
  const runSpeed=player.speed*(FAST_RUN?1.85:1);

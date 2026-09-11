@@ -377,8 +377,6 @@ function initMobile(){
  const fb=document.getElementById('fireBtn');
  fb.addEventListener('touchstart',e=>{e.preventDefault();TOUCH.fire=true;},{passive:false});
  fb.addEventListener('touchend',e=>{e.preventDefault();TOUCH.fire=false;},{passive:false});
- const fastBtn=document.getElementById('fastBtn');if(fastBtn)fastBtn.addEventListener('touchend',e=>{e.preventDefault();toggleFastRun();},{passive:false});
- const carBtn=document.getElementById('carBtn');if(carBtn)carBtn.addEventListener('touchend',e=>{e.preventDefault();toggleVehicle();},{passive:false});
  document.getElementById('swapBtn').addEventListener('touchstart',e=>{e.preventDefault();if(state==='play')switchWeapon((player.wi+1)%WEAPONS.length);},{passive:false});
 }
 
@@ -528,9 +526,9 @@ function moveBullets(dt){
 function updateVehicle(dt,mx,mz){
  if(!vehicle)return false;
  const near=Math.hypot(player.x-vehicle.x,player.z-vehicle.z)<4.2;
- const prompt=document.getElementById('vehiclePrompt'),drive=document.getElementById('driveHud');
- if(!inVehicle){if(prompt)prompt.style.display=near?'block':'none';return false;}
- if(prompt)prompt.style.display='none';if(drive)drive.style.display='block';
+ const prompt=document.getElementById('vehiclePrompt'),drive=document.getElementById('driveHud'),carBtn=document.getElementById('carBtn');
+ if(!inVehicle){if(prompt)prompt.style.display=near?'block':'none';if(carBtn)carBtn.style.display=near?'flex':'none';return false;}
+ if(prompt)prompt.style.display='none';if(drive)drive.style.display='block';if(carBtn)carBtn.style.display='flex';
  const steer=(keys['a']||keys['arrowleft']?-1:0)+(keys['d']||keys['arrowright']?1:0);
  const throttle=(keys['w']||keys['arrowup']?1:0)+(keys['s']||keys['arrowdown']?-1:0);
  vehicle.ang-=steer*dt*1.8;const speed=throttle*12;
@@ -574,6 +572,8 @@ function update(dt){
  if(BTN.r){mx+=rx;mz+=rz;}
  if(BTN.l){mx-=rx;mz-=rz;}
  if(TOUCH.move.id!==null){mx+=fx*(-TOUCH.move.dy)+rx*TOUCH.move.dx;mz+=fz*(-TOUCH.move.dy)+rz*TOUCH.move.dx;}
+ /* FAST RUN is an active toggle: tap once and the operator keeps moving forward at sprint speed. */
+ if(FAST_RUN){mx+=fx;mz+=fz;}
  const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml;}
  player.dashCd=Math.max(0,player.dashCd-dt);
  const runSpeed=player.speed*(FAST_RUN?1.85:1);
@@ -789,6 +789,8 @@ document.getElementById('tabCamp').onclick=()=>setMode('campaign');
 document.getElementById('tabFree').onclick=()=>setMode('free');
 document.getElementById('start').onclick=startGame;
 const enterCarBtn=document.getElementById('enterCar');if(enterCarBtn)enterCarBtn.onclick=e=>{e.preventDefault();toggleVehicle();};
+const fastBtnUi=document.getElementById('fastBtn');if(fastBtnUi)fastBtnUi.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFastRun();};
+const carBtnUi=document.getElementById('carBtn');if(carBtnUi)carBtnUi.onclick=e=>{e.preventDefault();e.stopPropagation();toggleVehicle();};
 const centerBtn=document.getElementById('cBtn');
 centerBtn.onclick=e=>{e.preventDefault();e.stopPropagation();centerAction();};
 centerBtn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();centerAction();},{passive:false});

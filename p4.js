@@ -120,6 +120,8 @@ document.getElementById('tabCamp').onclick=()=>setMode('campaign');
 document.getElementById('tabFree').onclick=()=>setMode('free');
 document.getElementById('start').onclick=startGame;
 const enterCarBtn=document.getElementById('enterCar');if(enterCarBtn)enterCarBtn.onclick=e=>{e.preventDefault();toggleVehicle();};
+const fastBtnUi=document.getElementById('fastBtn');if(fastBtnUi)fastBtnUi.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFastRun();};
+const carBtnUi=document.getElementById('carBtn');if(carBtnUi)carBtnUi.onclick=e=>{e.preventDefault();e.stopPropagation();toggleVehicle();};
 const centerBtn=document.getElementById('cBtn');
 centerBtn.onclick=e=>{e.preventDefault();e.stopPropagation();centerAction();};
 centerBtn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();centerAction();},{passive:false});
