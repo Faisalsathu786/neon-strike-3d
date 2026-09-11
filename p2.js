@@ -54,6 +54,7 @@ addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;
  if(k==='r'&&state==='play')startReload();
  if(k==='q'&&state==='play')switchWeapon((player.wi+1)%WEAPONS.length);
  if(k==='shift'&&state==='play')tryDash();
+ if(k==='f'&&state==='play')toggleFastRun();
  if((k==='e'||k==='enter')&&state==='play')toggleVehicle();
  if(k>='1'&&k<='5'&&state==='play')switchWeapon(parseInt(k)-1);});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
@@ -68,7 +69,7 @@ addEventListener('mouseup',()=>{mouseDown=false;});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 
 const TOUCH={move:{id:null,ox:0,oy:0,dx:0,dy:0},look:{id:null,lx:0,ly:0},fire:false};
-const BTN={f:false,b:false,l:false,r:false,fire:false};let AUTO=false;
+const BTN={f:false,b:false,l:false,r:false,fire:false};let AUTO=false,FAST_RUN=false;
 function initMobile(){
  if(!('ontouchstart' in window))return;
  document.getElementById('touch').style.display='block';
@@ -76,7 +77,7 @@ function initMobile(){
  function setKnob(dx,dy){knob.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';}
  function tstart(ev){for(const t of ev.changedTouches){
    const el=document.elementFromPoint(t.clientX,t.clientY);
-   if(el&&el.id==='fireBtn'){TOUCH.fire=true;if(ev.cancelable)ev.preventDefault();continue;}
+   if(el&&(el.id==='fireBtn'||el.id==='fastBtn'||el.id==='carBtn')){if(el.id==='fireBtn')TOUCH.fire=true;if(ev.cancelable)ev.preventDefault();continue;}
    if(t.clientX<innerWidth*0.45&&TOUCH.move.id===null){TOUCH.move.id=t.identifier;TOUCH.move.ox=t.clientX;TOUCH.move.oy=t.clientY;
      TOUCH.move.dx=0;TOUCH.move.dy=0;stick.style.display='block';stick.style.left=(t.clientX-55)+'px';stick.style.top=(t.clientY-55)+'px';setKnob(0,0);}
    else if(TOUCH.look.id===null){TOUCH.look.id=t.identifier;TOUCH.look.lx=t.clientX;TOUCH.look.ly=t.clientY;}
@@ -96,6 +97,8 @@ function initMobile(){
  const fb=document.getElementById('fireBtn');
  fb.addEventListener('touchstart',e=>{e.preventDefault();TOUCH.fire=true;},{passive:false});
  fb.addEventListener('touchend',e=>{e.preventDefault();TOUCH.fire=false;},{passive:false});
+ const fastBtn=document.getElementById('fastBtn');if(fastBtn)fastBtn.addEventListener('touchend',e=>{e.preventDefault();toggleFastRun();},{passive:false});
+ const carBtn=document.getElementById('carBtn');if(carBtn)carBtn.addEventListener('touchend',e=>{e.preventDefault();toggleVehicle();},{passive:false});
  document.getElementById('swapBtn').addEventListener('touchstart',e=>{e.preventDefault();if(state==='play')switchWeapon((player.wi+1)%WEAPONS.length);},{passive:false});
 }
 
@@ -197,6 +200,7 @@ function addPickup(x,z,type){
 function startReload(){const w=WEAPONS[player.wi];if(player.reloading||player.mags[player.wi]>=w.mag)return;player.reloading=true;player.reload=w.reload;sfx('reload');}
 function switchWeapon(i){if(i<0||i>=WEAPONS.length||i===player.wi)return;player.wi=i;player.reloading=false;player.reload=0;player.fireCd=0.15;
  if(player.mesh){player.mesh.userData.gun.material.color.set(WEAPONS[i].color);player.mesh.userData.gun.scale.z=i===2?1.35:(i===3?1.85:(i===4?1.55:1.1));}updateHud();}
+function toggleFastRun(){FAST_RUN=!FAST_RUN;const b=document.getElementById('fastBtn');if(b)b.classList.toggle('on',FAST_RUN);const p=document.getElementById('pcRun');if(p)p.classList.toggle('on',FAST_RUN);if(FAST_RUN)sfx('dash');}
 function toggleVehicle(){if(!vehicle||state!=='play')return;if(!inVehicle&&Math.hypot(player.x-vehicle.x,player.z-vehicle.z)<4.2){inVehicle=true;sfx('vehicle');}else if(inVehicle){inVehicle=false;player.mesh.visible=true;document.getElementById('driveHud').style.display='none';player.x=vehicle.x+2.2;player.z=vehicle.z;}}
 function tryDash(){if(player.dashCd>0||state!=='play'||inVehicle)return;player.dashCd=1.2;player.dashT=0.16;sfx('dash');
  player.dx=Math.sin(player.ang);player.dz=Math.cos(player.ang);}

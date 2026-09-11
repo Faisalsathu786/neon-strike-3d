@@ -86,6 +86,12 @@
   #swapBtn{position:absolute;bottom:150px;right:52px;width:64px;height:64px;border-radius:50%;background:rgba(124,246,255,.18);border:2px solid rgba(124,246,255,.45);color:#7cf6ff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
   #autoBtn{position:absolute;bottom:150px;right:132px;width:64px;height:64px;border-radius:50%;background:rgba(255,224,138,.16);border:2px solid rgba(255,224,138,.5);color:#ffe08a;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:auto;opacity:.55;}
   #autoBtn.on{opacity:1;background:rgba(255,224,138,.42);box-shadow:0 0 16px rgba(255,224,138,.6);}
+  #fastBtn,#carBtn{position:absolute;bottom:230px;right:132px;width:70px;height:58px;border-radius:14px;background:rgba(92,255,176,.16);border:2px solid rgba(92,255,176,.48);color:#9dffd0;font-weight:800;font-size:10px;letter-spacing:1px;display:flex;align-items:center;justify-content:center;pointer-events:auto;touch-action:none;}
+  #carBtn{bottom:230px;right:52px;background:rgba(124,246,255,.16);border-color:rgba(124,246,255,.45);color:#7cf6ff;}
+  #fastBtn.on{background:rgba(92,255,176,.45);box-shadow:0 0 16px rgba(92,255,176,.6);}
+  #pcRun{position:fixed;left:16px;bottom:212px;z-index:8;display:none;width:58px;height:42px;border-radius:12px;border:1px solid #2b3656;background:rgba(10,14,28,.65);color:#9dffd0;font-size:10px;font-weight:800;pointer-events:auto;}
+  #pcRun.on{background:rgba(92,255,176,.4);box-shadow:0 0 13px rgba(92,255,176,.5);}
+  body.ispc #pcRun{display:block;}
   #pcpad{position:fixed;left:16px;bottom:16px;z-index:8;display:none;flex-direction:column;align-items:center;gap:7px;}
   #pcpad .pb{width:58px;height:58px;border-radius:15px;border:1px solid #2b3656;background:rgba(10,14,28,.6);color:#dfe6ff;font-size:20px;padding:0;line-height:1;pointer-events:auto;touch-action:none;}
   #pcpad .prow{display:flex;gap:8px;}
@@ -119,6 +125,7 @@
   <div class="prow"><button class="pb" id="pbL">◀</button><button class="pb" id="pbB">▼</button><button class="pb" id="pbR">▶</button></div>
 </div>
 <button id="bigFire">FIRE</button>
+<button id="pcRun">FAST RUN</button>
 <div id="menu" class="overlay">
   <h1>NEON STRIKE 3D</h1>
   <div class="sub">Tactical Combat · Human Hostiles · 10 Missions · v7</div>
@@ -142,6 +149,7 @@
   <div id="fireBtn">FIRE</div>
   <div id="swapBtn">SWAP</div>
   <div id="autoBtn">AUTO</div>
+  <div id="fastBtn">FAST RUN</div><div id="carBtn">CAR / E</div>
 </div>
 <script>__THREE_JS__</script>
 <script>__GAME_JS__</script>

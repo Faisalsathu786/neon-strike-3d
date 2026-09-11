@@ -99,6 +99,7 @@ function holdBtn(id,setter){
  el.addEventListener('contextmenu',e=>e.preventDefault());
 }
 holdBtn('pbF',v=>BTN.f=v);holdBtn('pbB',v=>BTN.b=v);holdBtn('pbL',v=>BTN.l=v);holdBtn('pbR',v=>BTN.r=v);holdBtn('bigFire',v=>BTN.fire=v);
+const pcRun=document.getElementById('pcRun');if(pcRun)pcRun.addEventListener('click',e=>{e.preventDefault();toggleFastRun();});
 const autoBtnEl=document.getElementById('autoBtn');
 if(autoBtnEl)autoBtnEl.addEventListener('click',e=>{
  e.preventDefault();e.stopPropagation();audioUnlock();

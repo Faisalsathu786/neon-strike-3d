@@ -85,8 +85,9 @@ function update(dt){
  if(TOUCH.move.id!==null){mx+=fx*(-TOUCH.move.dy)+rx*TOUCH.move.dx;mz+=fz*(-TOUCH.move.dy)+rz*TOUCH.move.dx;}
  const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml;}
  player.dashCd=Math.max(0,player.dashCd-dt);
+ const runSpeed=player.speed*(FAST_RUN?1.85:1);
  if(player.dashT>0){player.dashT-=dt;moveXZ(player,player.dx*player.speed*3*dt,player.dz*player.speed*3*dt);burst(player.x,1.0,player.z,'#7cf6ff',1,2);}
- else moveXZ(player,mx*player.speed*dt,mz*player.speed*dt);
+ else moveXZ(player,mx*runSpeed*dt,mz*runSpeed*dt);
  player.x=clamp(player.x,-HW+1.2,HW-1.2);player.z=clamp(player.z,-HD+1.2,HD-1.2);
  const av=worldDir();const al=Math.hypot(av.x,av.z)||1;player.ang=Math.atan2(av.x,av.z);
  player.mesh.rotation.y=Math.atan2(-(av.x/al),-(av.z/al));

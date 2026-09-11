@@ -79,10 +79,10 @@ function startGame(){
  const mi=(mode==='campaign')?LEVELS[level].map:selMap;
  buildWorld(MAPS[mi]);
  if(player.mesh){scene.remove(player.mesh);dispose(player.mesh);}
- player.mesh=buildHero();player.mesh.userData.gun.material.color.set(WEAPONS[0].color);
+ player.mesh=buildHero();player.mesh.userData.gun.material.color.set(WEAPONS[selectedLoadout].color);player.mesh.userData.gun.scale.z=selectedLoadout===2?1.35:(selectedLoadout===3?1.85:(selectedLoadout===4?1.55:1.1));
  scene.add(player.mesh);
  player.x=MAP.spawn.x;player.z=MAP.spawn.z;player.hp=player.maxHp;player.ang=0;
- player.wi=selectedLoadout;player.mags=WEAPONS.map(w=>w.mag);player.reloading=false;player.reload=0;player.fireCd=0;inVehicle=false;
+ player.wi=selectedLoadout;player.mags=WEAPONS.map(w=>w.mag);player.reloading=false;player.reload=0;player.fireCd=0;inVehicle=false;FAST_RUN=false;const fb=document.getElementById('fastBtn');if(fb)fb.classList.remove('on');const pr=document.getElementById('pcRun');if(pr)pr.classList.remove('on');
  player.dashCd=0;player.dashT=0;player.hitFlash=0;player.walk=0;
  enemies.forEach(e=>scene.remove(e.mesh));enemies=[];
  bullets.forEach(b=>scene.remove(b.m));bullets=[];

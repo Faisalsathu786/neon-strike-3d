@@ -157,7 +157,7 @@ function dispose(group){group.traverse(o=>{if(o.isMesh){o.geometry.dispose();if(
 function mkRng(seed){let s=seed>>>0;return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
 function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 
-let colliders=[],MAP=MAPS[0],vehicle=null;
+let colliders=[],MAP=MAPS[0],vehicle=null,parkedCars=[];
 
 function buildWorld(m){
  if(world)dispose(world);
@@ -203,6 +203,9 @@ function buildWorld(m){
  const cabin=new T.Mesh(new T.BoxGeometry(2.5,1.0,2.2),mat('#57727a'));cabin.position.set(0,1.55,0.25);cabin.castShadow=true;cg.add(cabin);
  for(const x of [-1.35,1.35])for(const z of [-1.55,1.55]){const wh=new T.Mesh(new T.CylinderGeometry(0.42,0.42,0.3,12),mat('#15191c'));wh.rotation.z=Math.PI/2;wh.position.set(x,0.48,z);cg.add(wh);}
  cg.position.set(MAP.spawn.x+6,0,MAP.spawn.z-5);world.add(cg);vehicle={mesh:cg,x:cg.position.x,z:cg.position.z,ang:0,near:false};
+ /* extra parked cars placed around the map for a lived-in battlefield */
+ parkedCars=[];const spots=[[MAP.spawn.x-18,MAP.spawn.z-10,0],[MAP.spawn.x+25,MAP.spawn.z+18,Math.PI/2],[MAP.spawn.x-34,MAP.spawn.z+28,-Math.PI/2]];
+ spots.forEach((s,i)=>{const p=cg.clone();p.position.set(clamp(s[0],-HW+5,HW-5),0,clamp(s[1],-HD+5,HD-5));p.rotation.y=s[2];p.traverse(o=>{if(o.isMesh)o.material=o.material.clone();});world.add(p);parkedCars.push(p);});
  sun.position.set(60,140,50);sun.target.position.set(0,0,0);
 }
 function deco(m,x,z,rng){
